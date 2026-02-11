@@ -117,8 +117,8 @@ export default async function LessonPlayerPage({
 
   return (
     <div className="flex min-h-[calc(100vh-4rem)]">
-      {/* Sidebar */}
-      <aside className="hidden w-72 shrink-0 border-r bg-white dark:bg-slate-950 lg:block">
+      {/* Sidebar — component handles mobile Sheet (fixed button) + desktop static */}
+      <aside className="shrink-0 lg:w-72 lg:border-r lg:bg-white dark:lg:bg-slate-950">
         <LessonSidebar
           courseId={courseId}
           courseTitle={course.title}
