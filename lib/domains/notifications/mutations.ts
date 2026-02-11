@@ -247,3 +247,52 @@ export async function deleteNotification(
 
   if (error) throw error;
 }
+
+// ============================================================================
+// Notification Triggers
+// ============================================================================
+
+/**
+ * Notify all students in an organization when an announcement is published.
+ * Queries the announcement by ID, then gets all student user_ids in the org
+ * from user_roles, and creates bulk notifications.
+ */
+export async function notifyOnAnnouncementPublish(
+  announcementId: string,
+  organizationId: string
+): Promise<Notification[]> {
+  const supabase = await createClient();
+
+  // Fetch the announcement to get its title
+  const { data: announcement, error: announcementError } = await supabase
+    .from("announcements")
+    .select("title")
+    .eq("id", announcementId)
+    .single();
+
+  if (announcementError) throw announcementError;
+
+  // Get all student user_ids in the organization
+  const { data: studentRoles, error: rolesError } = await supabase
+    .from("user_roles")
+    .select("user_id")
+    .eq("organization_id", organizationId)
+    .eq("role", "student");
+
+  if (rolesError) throw rolesError;
+
+  const studentIds = (studentRoles || []).map((r) => r.user_id);
+
+  if (studentIds.length === 0) return [];
+
+  // Build notification inputs for each student
+  const inputs: CreateNotificationInput[] = studentIds.map((userId) => ({
+    user_id: userId,
+    type: "announcement" as const,
+    title: announcement.title,
+    link: "/announcements",
+  }));
+
+  // Create bulk notifications
+  return createBulkNotifications(organizationId, inputs);
+}

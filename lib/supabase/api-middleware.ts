@@ -93,3 +93,44 @@ export function isAuthError(
 ): result is NextResponse {
   return result instanceof NextResponse;
 }
+
+/**
+ * Verify that a user owns (created) a specific course.
+ * Used to restrict instructors to only manage their own courses.
+ *
+ * Usage in course API routes:
+ * ```ts
+ * if (auth.roles.includes("instructor") && !auth.roles.includes("admin")) {
+ *   const ownership = await requireCourseOwnership(auth.user.id, courseId);
+ *   if (ownership instanceof NextResponse) return ownership;
+ * }
+ * ```
+ */
+export async function requireCourseOwnership(
+  userId: string,
+  courseId: string
+): Promise<true | NextResponse> {
+  const supabase = await createClient();
+
+  const { data: course, error } = await supabase
+    .from("courses")
+    .select("created_by")
+    .eq("id", courseId)
+    .single();
+
+  if (error || !course) {
+    return NextResponse.json(
+      { error: "Course not found" },
+      { status: 404 }
+    );
+  }
+
+  if (course.created_by !== userId) {
+    return NextResponse.json(
+      { error: "Forbidden — you can only manage your own courses" },
+      { status: 403 }
+    );
+  }
+
+  return true;
+}

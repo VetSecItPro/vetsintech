@@ -1,11 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { Check, ChevronDown, ChevronRight, FileText, Video, HelpCircle, BookOpen, FolderOpen } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, FileText, Video, HelpCircle, BookOpen, FolderOpen, Menu } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { ROUTES } from "@/lib/constants/routes";
 import type { ModuleWithLessons, LessonType } from "@/lib/domains/courses/types";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 
 interface LessonSidebarProps {
   courseId: string;
@@ -24,14 +32,15 @@ const LESSON_ICONS: Record<LessonType, typeof FileText> = {
   resource: FolderOpen,
 };
 
-export function LessonSidebar({
+function SidebarContent({
   courseId,
   courseTitle,
   modules,
   currentLessonId,
   completedLessonIds,
   progress,
-}: LessonSidebarProps) {
+  onLessonClick,
+}: LessonSidebarProps & { onLessonClick?: () => void }) {
   const [expandedModules, setExpandedModules] = useState<Set<string>>(() => {
     // Auto-expand the module containing the current lesson
     const moduleWithCurrent = modules.find((m) =>
@@ -56,6 +65,7 @@ export function LessonSidebar({
         <Link
           href={ROUTES.course(courseId)}
           className="text-sm font-semibold hover:underline"
+          onClick={onLessonClick}
         >
           {courseTitle}
         </Link>
@@ -101,6 +111,7 @@ export function LessonSidebar({
                     <li key={lesson.id}>
                       <Link
                         href={ROUTES.lesson(courseId, lesson.id)}
+                        onClick={onLessonClick}
                         className={cn(
                           "flex items-center gap-2 px-6 py-1.5 text-sm transition-colors",
                           isActive
@@ -124,5 +135,58 @@ export function LessonSidebar({
         ))}
       </nav>
     </div>
+  );
+}
+
+export function LessonSidebar({
+  courseId,
+  courseTitle,
+  modules,
+  currentLessonId,
+  completedLessonIds,
+  progress,
+}: LessonSidebarProps) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      {/* Mobile menu button - fixed at top */}
+      <div className="fixed top-16 left-4 z-40 lg:hidden">
+        <Sheet open={open} onOpenChange={setOpen}>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="sm" className="gap-2">
+              <Menu className="h-4 w-4" />
+              Lessons
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-80 p-0">
+            <SheetHeader className="sr-only">
+              <SheetTitle>Course Lessons</SheetTitle>
+            </SheetHeader>
+            <SidebarContent
+              courseId={courseId}
+              courseTitle={courseTitle}
+              modules={modules}
+              currentLessonId={currentLessonId}
+              completedLessonIds={completedLessonIds}
+              progress={progress}
+              onLessonClick={() => setOpen(false)}
+            />
+          </SheetContent>
+        </Sheet>
+      </div>
+
+      {/* Desktop sidebar - always visible */}
+      <div className="hidden h-full lg:block">
+        <SidebarContent
+          courseId={courseId}
+          courseTitle={courseTitle}
+          modules={modules}
+          currentLessonId={currentLessonId}
+          completedLessonIds={completedLessonIds}
+          progress={progress}
+        />
+      </div>
+    </>
   );
 }

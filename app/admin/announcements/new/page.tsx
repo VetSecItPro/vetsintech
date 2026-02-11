@@ -1,19 +1,48 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Loader2, Send, Save } from "lucide-react";
 import { ROUTES } from "@/lib/constants/routes";
 import { toast } from "sonner";
+
+interface Cohort {
+  id: string;
+  name: string;
+}
 
 export default function NewAnnouncementPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
+  const [cohortId, setCohortId] = useState<string>("");
+  const [cohorts, setCohorts] = useState<Cohort[]>([]);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    async function fetchCohorts() {
+      try {
+        const res = await fetch("/api/cohorts");
+        if (res.ok) {
+          const { data } = await res.json();
+          setCohorts(data || []);
+        }
+      } catch {
+        // Cohort loading is optional; silently fail
+      }
+    }
+    fetchCohorts();
+  }, []);
 
   function buildTiptapBody(text: string) {
     return {
@@ -33,14 +62,19 @@ export default function NewAnnouncementPage() {
 
     startTransition(async () => {
       try {
+        const payload: Record<string, unknown> = {
+          title: title.trim(),
+          body: buildTiptapBody(body),
+        };
+        if (cohortId && cohortId !== "all") {
+          payload.cohort_id = cohortId;
+        }
+
         // Create the announcement
         const createRes = await fetch("/api/announcements", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: title.trim(),
-            body: buildTiptapBody(body),
-          }),
+          body: JSON.stringify(payload),
         });
 
         if (!createRes.ok) {
@@ -98,6 +132,26 @@ export default function NewAnnouncementPage() {
             className="bg-slate-900 border-slate-700"
             required
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="cohort">Cohort (optional)</Label>
+          <Select value={cohortId} onValueChange={setCohortId}>
+            <SelectTrigger className="bg-slate-900 border-slate-700">
+              <SelectValue placeholder="All students" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All students</SelectItem>
+              {cohorts.map((c) => (
+                <SelectItem key={c.id} value={c.id}>
+                  {c.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-slate-600">
+            Leave as &quot;All students&quot; to send to everyone
+          </p>
         </div>
 
         <div className="space-y-2">

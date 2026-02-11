@@ -100,7 +100,7 @@ export default async function StudentDashboardPage() {
       </div>
 
       {/* Continue learning + Announcements */}
-      <div className="grid gap-6 lg:grid-cols-3">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <ContinueLearning items={continueLearningItems} />
         </div>
@@ -113,7 +113,7 @@ export default async function StudentDashboardPage() {
       {enrollments.length > 0 ? (
         <div>
           <h2 className="mb-4 text-lg font-semibold">My Courses</h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
             {enrollments.map((enrollment) => (
               <CourseCard
                 key={enrollment.id}

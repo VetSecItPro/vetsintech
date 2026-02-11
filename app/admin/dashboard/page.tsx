@@ -62,7 +62,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Stat Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Students"
           value={formatCompactNumber(stats.totalStudents)}
@@ -92,7 +92,7 @@ export default async function AdminDashboardPage() {
       {/* Course Analytics Table */}
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-white">Course Analytics</h2>
-        <div className="rounded-lg border border-slate-800 bg-slate-900">
+        <div className="overflow-x-auto rounded-lg border border-slate-800 bg-slate-900">
           {courseAnalytics.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
               <BookOpen className="mb-3 size-10 text-slate-500" />
@@ -166,7 +166,7 @@ export default async function AdminDashboardPage() {
       {/* Student Progress Table */}
       <div className="space-y-4">
         <h2 className="text-xl font-semibold text-white">Student Progress</h2>
-        <div className="rounded-lg border border-slate-800 bg-slate-900">
+        <div className="overflow-x-auto rounded-lg border border-slate-800 bg-slate-900">
           {studentProgress.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
               <Users className="mb-3 size-10 text-slate-500" />

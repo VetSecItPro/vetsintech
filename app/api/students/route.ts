@@ -163,14 +163,13 @@ export async function POST(request: Request) {
 
     const userId = newUser.user.id;
 
-    // Update the auto-created profile with full_name and organization
-    await adminSupabase
-      .from("profiles")
-      .update({
-        full_name,
-        organization_id: auth.organizationId,
-      })
-      .eq("id", userId);
+    // Create profile in vit schema (no auto-trigger in shared DB)
+    await adminSupabase.from("profiles").upsert({
+      id: userId,
+      email,
+      full_name,
+      organization_id: auth.organizationId,
+    });
 
     // Assign role
     await adminSupabase.from("user_roles").insert({
