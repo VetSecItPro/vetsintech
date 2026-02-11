@@ -20,6 +20,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AddStudentButton,
+  RemoveEnrollmentButton,
+} from "./enrollment-actions";
 
 const STATUS_COLORS: Record<string, string> = {
   active: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
@@ -116,10 +120,18 @@ export default async function CohortDetailPage({
       {/* Enrollment table */}
       <Card>
         <CardHeader>
-          <CardTitle>Enrolled Students</CardTitle>
-          <CardDescription>
-            {cohort.enrollments.length} student{cohort.enrollments.length !== 1 ? "s" : ""} enrolled
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Enrolled Students</CardTitle>
+              <CardDescription>
+                {cohort.enrollments.length} student{cohort.enrollments.length !== 1 ? "s" : ""} enrolled
+              </CardDescription>
+            </div>
+            <AddStudentButton
+              cohortId={cohortId}
+              enrolledUserIds={cohort.enrollments.map((e) => e.user.id)}
+            />
+          </div>
         </CardHeader>
         <CardContent>
           {cohort.enrollments.length === 0 ? (
@@ -134,6 +146,7 @@ export default async function CohortDetailPage({
                   <TableHead>Email</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Enrolled</TableHead>
+                  <TableHead className="w-[60px]" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -157,6 +170,12 @@ export default async function CohortDetailPage({
                     </TableCell>
                     <TableCell className="text-slate-500">
                       {new Date(enrollment.enrolled_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <RemoveEnrollmentButton
+                        enrollmentId={enrollment.id}
+                        studentName={enrollment.user.full_name}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}

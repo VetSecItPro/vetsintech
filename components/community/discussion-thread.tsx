@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { RefreshCw } from "lucide-react";
 import type { DiscussionWithAuthor, PostWithAuthor } from "@/lib/domains/community/types";
+import { useRealtimePosts } from "@/lib/hooks/use-realtime-posts";
 import { PostCard } from "./post-card";
 import { ReplyForm } from "./reply-form";
 import { TiptapContent } from "./tiptap-content";
@@ -11,15 +13,27 @@ interface DiscussionThreadProps {
   discussion: DiscussionWithAuthor;
   posts: PostWithAuthor[];
   isLocked: boolean;
+  currentUserId?: string;
 }
 
 export function DiscussionThread({
   discussion,
   posts,
   isLocked,
+  currentUserId,
 }: DiscussionThreadProps) {
   const router = useRouter();
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
+
+  const { newPostCount, resetCount } = useRealtimePosts({
+    discussionId: discussion.id,
+    currentUserId,
+  });
+
+  function handleLoadNewReplies() {
+    resetCount();
+    router.refresh();
+  }
 
   // Separate top-level posts from nested replies
   const topLevelPosts = posts.filter((p) => !p.parent_post_id);
@@ -62,6 +76,20 @@ export function DiscussionThread({
             onSubmitted={handleSubmitted}
           />
         </div>
+      )}
+
+      {/* Realtime new-reply notification */}
+      {newPostCount > 0 && (
+        <button
+          onClick={handleLoadNewReplies}
+          className="flex w-full items-center justify-center gap-2 rounded-lg border border-blue-500/30 bg-blue-500/10 px-4 py-2.5 text-sm font-medium text-blue-400 transition-colors hover:bg-blue-500/20"
+        >
+          <RefreshCw className="h-4 w-4" />
+          {newPostCount === 1
+            ? "1 new reply available"
+            : `${newPostCount} new replies available`}{" "}
+          — click to refresh
+        </button>
       )}
 
       {/* Posts */}

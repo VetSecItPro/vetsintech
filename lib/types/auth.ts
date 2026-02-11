@@ -1,4 +1,5 @@
-export type UserRole = "admin" | "instructor" | "student";
+import type { UserRole } from "./database";
+export type { UserRole } from "./database";
 
 export interface UserProfile {
   id: string;
