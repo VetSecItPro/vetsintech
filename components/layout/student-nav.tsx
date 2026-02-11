@@ -23,6 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { NotificationBell } from "./notification-bell";
 import {
   Sheet,
   SheetContent,
@@ -128,6 +129,7 @@ export function StudentNav({ userName }: StudentNavProps) {
 
         {/* Right side */}
         <div className="ml-auto flex items-center gap-2">
+          <NotificationBell />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">

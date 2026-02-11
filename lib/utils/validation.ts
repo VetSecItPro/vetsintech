@@ -153,3 +153,78 @@ export const cohortSchema = z
   );
 
 export type CohortFormData = z.infer<typeof cohortSchema>;
+
+// ============================================================================
+// Quiz Schemas
+// ============================================================================
+
+export const questionTypeSchema = z.enum([
+  "multiple_choice",
+  "true_false",
+  "short_answer",
+]);
+
+export const quizSchema = z.object({
+  title: z
+    .string()
+    .min(2, "Title must be at least 2 characters")
+    .max(200, "Title must be under 200 characters"),
+  description: z
+    .string()
+    .max(2000, "Description must be under 2000 characters")
+    .optional(),
+  passing_score: z
+    .number()
+    .min(0, "Passing score must be at least 0")
+    .max(100, "Passing score must be at most 100")
+    .optional(),
+  max_attempts: z
+    .number()
+    .int()
+    .positive("Max attempts must be positive")
+    .max(100, "Max attempts seems too high")
+    .nullable()
+    .optional(),
+  time_limit_minutes: z
+    .number()
+    .int()
+    .positive("Time limit must be positive")
+    .max(600, "Time limit over 10 hours seems wrong")
+    .nullable()
+    .optional(),
+  shuffle_questions: z.boolean().optional(),
+  show_correct_answers: z.boolean().optional(),
+});
+
+export const quizOptionSchema = z.object({
+  option_text: z
+    .string()
+    .min(1, "Option text is required")
+    .max(1000, "Option text must be under 1000 characters"),
+  is_correct: z.boolean(),
+  sort_order: z.number().int().optional(),
+});
+
+export const questionSchema = z.object({
+  question_type: questionTypeSchema,
+  question_text: z
+    .string()
+    .min(1, "Question text is required")
+    .max(5000, "Question text must be under 5000 characters"),
+  options: z
+    .array(quizOptionSchema)
+    .max(20, "Maximum 20 options per question")
+    .optional(),
+  explanation: z
+    .string()
+    .max(2000, "Explanation must be under 2000 characters")
+    .optional(),
+  points: z
+    .number()
+    .min(0, "Points must be at least 0")
+    .max(1000, "Points seem too high")
+    .optional(),
+});
+
+export type QuizFormData = z.infer<typeof quizSchema>;
+export type QuestionFormData = z.infer<typeof questionSchema>;
