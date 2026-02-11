@@ -91,6 +91,7 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
         discussion={thread}
         posts={thread.posts}
         isLocked={thread.is_locked}
+        currentUserId={user.id}
       />
     </div>
   );
