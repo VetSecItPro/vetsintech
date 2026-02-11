@@ -43,6 +43,11 @@ next-env.d.ts
 # Supabase
 supabase/.temp/
 
+# Internal docs — public repo, keep these private
+*.md
+!README.md
+.mdmp/
+
 # Skill reports (never commit)
 .security-reports/
 .security-audit.json
