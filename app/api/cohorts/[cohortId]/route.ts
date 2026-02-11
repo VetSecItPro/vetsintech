@@ -2,6 +2,16 @@ import { NextResponse } from "next/server";
 import { requireAuth, isAuthError } from "@/lib/supabase/api-middleware";
 import { getCohortById } from "@/lib/domains/courses/queries";
 import { updateCohort, deleteCohort } from "@/lib/domains/courses/mutations";
+import { z } from "zod/v4";
+
+const updateCohortSchema = z.object({
+  name: z.string().min(3).max(200).optional(),
+  description: z.string().max(2000).optional(),
+  status: z.enum(["active", "completed", "archived"]).optional(),
+  starts_at: z.string().optional(),
+  ends_at: z.string().optional(),
+  max_students: z.number().int().positive().max(10000).optional(),
+});
 
 export async function GET(
   request: Request,
@@ -37,8 +47,16 @@ export async function PATCH(
 
     const { cohortId } = await params;
     const body = await request.json();
+    const parsed = updateCohortSchema.safeParse(body);
 
-    const cohort = await updateCohort(cohortId, auth.organizationId, body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: z.prettifyError(parsed.error) },
+        { status: 400 }
+      );
+    }
+
+    const cohort = await updateCohort(cohortId, auth.organizationId, parsed.data);
     return NextResponse.json({ data: cohort });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Internal server error";

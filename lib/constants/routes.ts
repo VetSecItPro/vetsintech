@@ -16,6 +16,12 @@ export const ROUTES = {
   publicProfile: (userId: string) => `/profile/${userId}`,
   notifications: "/notifications",
   certificate: (certId: string) => `/certificates/${certId}`,
+  announcements: "/announcements",
+
+  // Public
+  catalog: "/catalog",
+  about: "/about",
+  contact: "/contact",
 
   // Admin
   adminDashboard: "/admin/dashboard",

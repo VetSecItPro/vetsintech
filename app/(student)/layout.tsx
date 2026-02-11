@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { StudentNav } from "@/components/layout/student-nav";
+import { CommandPalette } from "@/components/shared/command-palette";
 
 export default function StudentLayout({
   children,
@@ -27,6 +28,7 @@ export default function StudentLayout({
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <StudentNav userName={userName} />
+      <CommandPalette />
       <main className="mx-auto max-w-7xl px-4 py-6 md:px-6 lg:px-8">
         {children}
       </main>

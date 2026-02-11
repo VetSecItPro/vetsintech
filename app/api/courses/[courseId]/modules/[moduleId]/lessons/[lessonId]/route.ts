@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { requireAuth, isAuthError } from "@/lib/supabase/api-middleware";
 import { getLessonById } from "@/lib/domains/courses/queries";
 import { updateLesson, deleteLesson } from "@/lib/domains/courses/mutations";
+import { z } from "zod/v4";
+import { lessonSchema } from "@/lib/utils/validation";
+
+const updateLessonSchema = lessonSchema.partial().extend({
+  content: z.record(z.string(), z.unknown()).optional(),
+});
 
 export async function GET(
   request: Request,
@@ -37,8 +43,16 @@ export async function PATCH(
 
     const { lessonId } = await params;
     const body = await request.json();
+    const parsed = updateLessonSchema.safeParse(body);
 
-    const lesson = await updateLesson(lessonId, body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: z.prettifyError(parsed.error) },
+        { status: 400 }
+      );
+    }
+
+    const lesson = await updateLesson(lessonId, parsed.data);
     return NextResponse.json({ data: lesson });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Internal server error";
