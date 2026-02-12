@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -57,7 +57,6 @@ export default function GradeSubmissionPage() {
     assignmentId: string;
     submissionId: string;
   }>();
-  const router = useRouter();
   const { courseId, assignmentId, submissionId } = params;
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);

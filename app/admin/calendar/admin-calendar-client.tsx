@@ -1,13 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  startOfMonth,
-  endOfMonth,
-  subMonths,
-  addMonths,
-} from "date-fns";
 import { Plus } from "lucide-react";
 import type { CalendarItem } from "@/lib/domains/calendar/types";
 import { CalendarView } from "@/components/calendar/calendar-view";
@@ -55,10 +49,9 @@ const EVENT_COLORS = [
 export function AdminCalendarClient({
   initialItems,
   courses,
-  organizationId,
 }: AdminCalendarClientProps) {
   const router = useRouter();
-  const [items, setItems] = useState<CalendarItem[]>(initialItems);
+  const [items] = useState<CalendarItem[]>(initialItems);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -115,19 +108,6 @@ export function AdminCalendarClient({
       console.error("Failed to create event:", error);
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleDeleteEvent = async (eventId: string) => {
-    try {
-      const res = await fetch(`/api/calendar/events/${eventId}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        router.refresh();
-      }
-    } catch (error) {
-      console.error("Failed to delete event:", error);
     }
   };
 

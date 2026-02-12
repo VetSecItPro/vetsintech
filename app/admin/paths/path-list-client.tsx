@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ROUTES } from "@/lib/constants/routes";
 import type { LearningPathWithStats } from "@/lib/domains/learning-paths/types";
@@ -55,7 +54,6 @@ const STATUS_BADGE: Record<string, { label: string; variant: "default" | "second
 };
 
 export function PathListClient({ initialPaths }: PathListClientProps) {
-  const router = useRouter();
   const [paths, setPaths] = useState(initialPaths);
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);

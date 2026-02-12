@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { ROUTES } from "@/lib/constants/routes";
 import { getPublishedPathsWithProgress } from "@/lib/domains/learning-paths/queries";
@@ -59,9 +60,11 @@ export default async function PathsPage() {
               >
                 <div className="flex h-32 items-center justify-center bg-gradient-to-br from-indigo-950 to-slate-900">
                   {path.thumbnail_url ? (
-                    <img
+                    <Image
                       src={path.thumbnail_url}
                       alt={path.title}
+                      width={400}
+                      height={300}
                       className="h-full w-full object-cover"
                     />
                   ) : (
@@ -145,9 +148,11 @@ export default async function PathsPage() {
               >
                 <div className="flex h-32 items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
                   {path.thumbnail_url ? (
-                    <img
+                    <Image
                       src={path.thumbnail_url}
                       alt={path.title}
+                      width={400}
+                      height={300}
                       className="h-full w-full object-cover"
                     />
                   ) : (

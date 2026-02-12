@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { toast } from "sonner";
 import { ROUTES } from "@/lib/constants/routes";
 import {
@@ -53,7 +53,6 @@ interface PathDetailPageProps {
 
 export default function PathDetailPage({ params }: PathDetailPageProps) {
   const { pathId } = use(params);
-  const router = useRouter();
   const [data, setData] = useState<PathDetailData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEnrolling, setIsEnrolling] = useState(false);
@@ -212,9 +211,11 @@ export default function PathDetailPage({ params }: PathDetailPageProps) {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
         {path.thumbnail_url && (
           <div className="w-full shrink-0 overflow-hidden rounded-lg lg:w-72">
-            <img
+            <Image
               src={path.thumbnail_url}
               alt={path.title}
+              width={288}
+              height={162}
               className="aspect-video w-full object-cover"
             />
           </div>

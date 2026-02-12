@@ -49,10 +49,7 @@ export default async function StudentCalendarPage() {
         </p>
       </div>
 
-      <StudentCalendarClient
-        initialItems={items}
-        organizationId={profile.organization_id}
-      />
+      <StudentCalendarClient initialItems={items} />
     </div>
   );
 }

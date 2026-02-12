@@ -176,7 +176,6 @@ export class CourseraAdapter implements PlatformAdapter {
     let start = 0;
     const limit = 100;
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const pageParams = {
         ...params,

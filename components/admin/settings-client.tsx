@@ -189,7 +189,6 @@ export function SettingsClient({
 
 function MemberRow({
   member,
-  orgId,
 }: {
   member: Member;
   orgId: string;

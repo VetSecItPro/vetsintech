@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { toast } from "sonner";
 import type { ResourceWithCourse, ResourceType } from "@/lib/domains/resources/types";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -27,7 +26,6 @@ import {
   ExternalLink,
   LayoutGrid,
   List,
-  Eye,
 } from "lucide-react";
 
 // ---------- Resource type icon helper ----------

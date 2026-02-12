@@ -52,7 +52,6 @@ import type {
 } from "@/lib/domains/gradebook/types";
 import {
   formatGradePercentage,
-  getGradeColor,
   getGradeBgColor,
   getCategoryLabel,
   calculateClassStats,

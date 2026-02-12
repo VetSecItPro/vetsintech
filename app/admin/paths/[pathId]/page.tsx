@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { ROUTES } from "@/lib/constants/routes";
@@ -20,7 +19,6 @@ interface EditPathPageProps {
 
 export default function EditPathPage({ params }: EditPathPageProps) {
   const { pathId } = use(params);
-  const router = useRouter();
   const [path, setPath] = useState<LearningPath | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);

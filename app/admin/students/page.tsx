@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ROUTES } from "@/lib/constants/routes";
-import { Plus, Search, Users, GraduationCap } from "lucide-react";
+import { Plus, Search, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -14,13 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export const metadata = {
   title: "Manage Students",
@@ -63,7 +56,7 @@ export default async function AdminStudentsPage({
 
   // Build query for students in the organization
   // Get user IDs with student role in this org
-  let rolesQuery = supabase
+  const rolesQuery = supabase
     .from("user_roles")
     .select("user_id")
     .eq("organization_id", profile.organization_id)

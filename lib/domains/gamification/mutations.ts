@@ -220,7 +220,6 @@ export async function updateStreak(
   }
 
   // Check if yesterday
-  const lastDate = new Date(existing.last_activity_date);
   const yesterday = new Date(today);
   yesterday.setDate(yesterday.getDate() - 1);
   const yesterdayStr = yesterday.toISOString().split("T")[0];

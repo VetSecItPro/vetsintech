@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import type { PortfolioProfile, PortfolioItem } from "@/lib/domains/portfolio/types";
+import type { PortfolioItem } from "@/lib/domains/portfolio/types";
 
 const MILITARY_BRANCHES = [
   "Army",
@@ -39,7 +39,6 @@ const ITEM_TYPES = [
 ] as const;
 
 export default function PortfolioEditorPage() {
-  const [profile, setProfile] = useState<PortfolioProfile | null>(null);
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
@@ -80,7 +79,6 @@ export default function PortfolioEditorPage() {
 
       if (profileRes.ok) {
         const { data } = await profileRes.json();
-        setProfile(data);
         setHeadline(data.headline || "");
         setBio(data.bio || "");
         setLinkedinUrl(data.linkedin_url || "");
@@ -136,7 +134,6 @@ export default function PortfolioEditorPage() {
         if (res.ok) {
           const { data } = await res.json();
           setUsername(data.username);
-          setProfile(data);
           toast.success("Username claimed successfully");
         } else {
           const err = await res.json();
@@ -168,8 +165,6 @@ export default function PortfolioEditorPage() {
         });
 
         if (res.ok) {
-          const { data } = await res.json();
-          setProfile(data);
           toast.success("Portfolio profile updated");
         } else {
           const err = await res.json();
