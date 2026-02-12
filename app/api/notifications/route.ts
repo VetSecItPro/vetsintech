@@ -22,12 +22,14 @@ export async function GET(request: Request) {
 
     const limit = searchParams.get("limit");
     if (limit) {
-      options.limit = parseInt(limit, 10);
+      const parsed = parseInt(limit, 10);
+      options.limit = Number.isNaN(parsed) ? 25 : Math.min(Math.max(1, parsed), 100);
     }
 
     const offset = searchParams.get("offset");
     if (offset) {
-      options.offset = parseInt(offset, 10);
+      const parsed = parseInt(offset, 10);
+      options.offset = Number.isNaN(parsed) ? 0 : Math.max(0, parsed);
     }
 
     const [notifications, unreadCount] = await Promise.all([
@@ -39,7 +41,10 @@ export async function GET(request: Request) {
       { data: notifications },
       {
         status: 200,
-        headers: { "X-Unread-Count": String(unreadCount) },
+        headers: {
+          "X-Unread-Count": String(unreadCount),
+          "Cache-Control": "private, max-age=30, stale-while-revalidate=300",
+        },
       }
     );
   } catch (error) {

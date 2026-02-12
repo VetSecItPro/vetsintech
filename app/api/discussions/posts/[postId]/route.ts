@@ -47,7 +47,8 @@ export async function PATCH(
     );
   }
 
-  const post = await updatePost(postId, bodyResult.data.body);
+  // Security: scope update to the post author
+  const post = await updatePost(postId, auth.user.id, bodyResult.data.body);
   return NextResponse.json({ data: post });
 }
 

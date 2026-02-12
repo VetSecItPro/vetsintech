@@ -31,7 +31,10 @@ export async function GET(request: Request) {
     }
 
     const items = await getCalendarItems(auth.organizationId, start, end);
-    return NextResponse.json({ data: items }, { status: 200 });
+    return NextResponse.json({ data: items }, {
+      status: 200,
+      headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=300" },
+    });
   } catch (error) {
     console.error("GET /api/calendar error:", error);
     return NextResponse.json(

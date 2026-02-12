@@ -106,6 +106,7 @@ export async function PATCH(
 
     const discussion = await updateDiscussion(
       threadId,
+      organizationId,
       contentResult.data as { title?: string; body?: Record<string, unknown> }
     );
 

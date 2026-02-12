@@ -59,8 +59,11 @@ export async function PATCH(
     const cohort = await updateCohort(cohortId, auth.organizationId, parsed.data);
     return NextResponse.json({ data: cohort });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("PATCH /api/cohorts/[cohortId] error:", err);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 

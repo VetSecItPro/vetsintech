@@ -31,7 +31,10 @@ export async function GET(request: Request) {
 
     const courses = await getCourses(auth.organizationId, filters);
 
-    return NextResponse.json({ data: courses }, { status: 200 });
+    return NextResponse.json({ data: courses }, {
+      status: 200,
+      headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=300" },
+    });
   } catch (error) {
     console.error("GET /api/courses error:", error);
     return NextResponse.json(

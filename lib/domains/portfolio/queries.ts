@@ -123,30 +123,23 @@ export async function getPublicPortfolio(
   const userId = profile.id;
   const organizationId = profile.organization_id;
 
-  // 2. Get completed courses
-  const completedCourses = await getCompletedCoursesForPortfolio(
-    userId,
-    organizationId
-  );
+  // 2-6. Fetch all portfolio data in parallel
+  const [completedCourses, certificates, itemsResult, badges, totalXp] =
+    await Promise.all([
+      getCompletedCoursesForPortfolio(userId, organizationId),
+      getCertificatesForPortfolio(userId),
+      supabase
+        .from("portfolio_items")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("visible", true)
+        .order("position", { ascending: true }),
+      getBadgesForPortfolio(userId),
+      getTotalXpForPortfolio(userId),
+    ]);
 
-  // 3. Get certificates
-  const certificates = await getCertificatesForPortfolio(userId);
-
-  // 4. Get visible portfolio items
-  const { data: itemsData, error: itemsError } = await supabase
-    .from("portfolio_items")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("visible", true)
-    .order("position", { ascending: true });
-
-  if (itemsError) throw itemsError;
-
-  // 5. Get badges (handle gracefully if tables don't have data)
-  const badges = await getBadgesForPortfolio(userId);
-
-  // 6. Get total XP
-  const totalXp = await getTotalXpForPortfolio(userId);
+  const itemsData = itemsResult.data;
+  if (itemsResult.error) throw itemsResult.error;
 
   return {
     profile: {

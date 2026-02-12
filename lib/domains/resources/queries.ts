@@ -140,7 +140,8 @@ export async function getResourceTags(
   const { data, error } = await supabase
     .from("resources")
     .select("tags")
-    .eq("organization_id", organizationId);
+    .eq("organization_id", organizationId)
+    .limit(5000);
 
   if (error) throw error;
 

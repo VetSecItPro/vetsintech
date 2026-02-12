@@ -11,7 +11,8 @@ export async function PATCH(
     if (isAuthError(auth)) return auth;
 
     const { id } = await params;
-    const notification = await markAsRead(id);
+    // Security: scope to authenticated user
+    const notification = await markAsRead(id, auth.user.id);
 
     return NextResponse.json({ data: notification }, { status: 200 });
   } catch (error) {
@@ -32,7 +33,8 @@ export async function DELETE(
     if (isAuthError(auth)) return auth;
 
     const { id } = await params;
-    await deleteNotification(id);
+    // Security: scope to authenticated user
+    await deleteNotification(id, auth.user.id);
 
     return NextResponse.json({ data: { deleted: true } }, { status: 200 });
   } catch (error) {

@@ -29,12 +29,14 @@ export async function GET(request: Request) {
 
     const limit = searchParams.get("limit");
     if (limit) {
-      filters.limit = parseInt(limit, 10);
+      const parsed = parseInt(limit, 10);
+      filters.limit = Number.isNaN(parsed) ? 25 : Math.min(Math.max(1, parsed), 100);
     }
 
     const offset = searchParams.get("offset");
     if (offset) {
-      filters.offset = parseInt(offset, 10);
+      const parsed = parseInt(offset, 10);
+      filters.offset = Number.isNaN(parsed) ? 0 : Math.max(0, parsed);
     }
 
     const discussions = await getDiscussions(auth.organizationId, filters);

@@ -36,7 +36,10 @@ export async function GET(request: Request) {
 
     const resources = await getResources(auth.organizationId, filters);
 
-    return NextResponse.json({ data: resources }, { status: 200 });
+    return NextResponse.json({ data: resources }, {
+      status: 200,
+      headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=300" },
+    });
   } catch (error) {
     console.error("GET /api/resources error:", error);
     return NextResponse.json(

@@ -67,17 +67,17 @@ export async function PATCH(
 
     // Handle publish/unpublish actions
     if (action === "publish") {
-      const announcement = await publishAnnouncement(id);
+      const announcement = await publishAnnouncement(id, auth.organizationId);
       return NextResponse.json({ data: announcement }, { status: 200 });
     }
 
     if (action === "unpublish") {
-      const announcement = await unpublishAnnouncement(id);
+      const announcement = await unpublishAnnouncement(id, auth.organizationId);
       return NextResponse.json({ data: announcement }, { status: 200 });
     }
 
     // Handle field updates
-    const announcement = await updateAnnouncement(id, updateData);
+    const announcement = await updateAnnouncement(id, auth.organizationId, updateData);
 
     return NextResponse.json({ data: announcement }, { status: 200 });
   } catch (error) {
@@ -98,7 +98,7 @@ export async function DELETE(
     if (isAuthError(auth)) return auth;
 
     const { id } = await params;
-    await deleteAnnouncement(id);
+    await deleteAnnouncement(id, auth.organizationId);
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {

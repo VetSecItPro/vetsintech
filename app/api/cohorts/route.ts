@@ -49,7 +49,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ data: cohort }, { status: 201 });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("POST /api/cohorts error:", err);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

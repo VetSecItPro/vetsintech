@@ -47,6 +47,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
+      <head>
+        <link
+          rel="dns-prefetch"
+          href="https://mhqpjprmpvigmwcghpzx.supabase.co"
+        />
+        <link
+          rel="preconnect"
+          href="https://mhqpjprmpvigmwcghpzx.supabase.co"
+        />
+      </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <TooltipProvider delayDuration={300}>
           {children}
