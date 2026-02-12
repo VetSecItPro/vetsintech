@@ -59,6 +59,13 @@ supabase/.temp/
 .a11y-reports/
 *.skill-output.md
 
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+e2e/.auth/
+!e2e/.auth/.gitkeep
+
 # Sentry
 .sentryclirc
 .vercel
