@@ -2,7 +2,7 @@
 // Email Service — public barrel export
 // ============================================================================
 
-export { resend } from "./client";
+export { getResendClient } from "./client";
 export { sendEmail } from "./send";
 export type { SendEmailOptions, SendEmailResult } from "./send";
 

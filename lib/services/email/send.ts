@@ -3,7 +3,7 @@
 // Wraps Resend + logs to email_log table
 // ============================================================================
 
-import { resend } from "./client";
+import { getResendClient } from "./client";
 import { createClient } from "@/lib/supabase/server";
 
 const DEFAULT_FROM =
@@ -45,7 +45,7 @@ export async function sendEmail(
   let errorMessage: string | undefined;
 
   try {
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResendClient().emails.send({
       from: from ?? DEFAULT_FROM,
       to,
       subject,
