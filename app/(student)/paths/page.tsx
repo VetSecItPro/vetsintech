@@ -1,7 +1,6 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { ROUTES } from "@/lib/constants/routes";
 import { getPublishedPathsWithProgress } from "@/lib/domains/learning-paths/queries";
 import { BookOpen, Clock, GraduationCap, Layers } from "lucide-react";
@@ -19,22 +18,10 @@ const DIFFICULTY_COLORS: Record<string, string> = {
 };
 
 export default async function PathsPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(ROUTES.login);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id")
-    .eq("id", user.id)
-    .single();
-  if (!profile) redirect(ROUTES.login);
+  const { user, organizationId } = await getAuthenticatedUser();
 
   const paths = await getPublishedPathsWithProgress(
-    profile.organization_id,
+    organizationId,
     user.id
   );
 

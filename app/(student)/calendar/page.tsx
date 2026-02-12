@@ -1,6 +1,4 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { ROUTES } from "@/lib/constants/routes";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { getCalendarItems } from "@/lib/domains/calendar/queries";
 import { StudentCalendarClient } from "./student-calendar-client";
 import {
@@ -15,19 +13,7 @@ export const metadata = {
 };
 
 export default async function StudentCalendarPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(ROUTES.login);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id")
-    .eq("id", user.id)
-    .single();
-  if (!profile) redirect(ROUTES.login);
+  const { organizationId } = await getAuthenticatedUser();
 
   // Fetch a 3-month window of calendar items (previous, current, next month)
   const now = new Date();
@@ -35,7 +21,7 @@ export default async function StudentCalendarPage() {
   const endDate = endOfMonth(addMonths(now, 1)).toISOString();
 
   const items = await getCalendarItems(
-    profile.organization_id,
+    organizationId,
     startDate,
     endDate
   );

@@ -1,6 +1,4 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { ROUTES } from "@/lib/constants/routes";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { getLeaderboard } from "@/lib/domains/gamification/queries";
 import { getUserXpTotal, getUserStreak } from "@/lib/domains/gamification/queries";
 import { calculateLevel, getLevelTitle, formatXpAmount } from "@/lib/domains/gamification/utils";
@@ -15,26 +13,14 @@ export const metadata = {
 };
 
 export default async function LeaderboardPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(ROUTES.login);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id, full_name")
-    .eq("id", user.id)
-    .single();
-  if (!profile) redirect(ROUTES.login);
+  const { user, organizationId } = await getAuthenticatedUser();
 
   // Fetch data in parallel
   const [allTimeEntries, monthEntries, totalXp, streak] = await Promise.all([
-    getLeaderboard(profile.organization_id, { limit: 50, period: "all_time" }),
-    getLeaderboard(profile.organization_id, { limit: 50, period: "this_month" }),
-    getUserXpTotal(user.id, profile.organization_id),
-    getUserStreak(user.id, profile.organization_id),
+    getLeaderboard(organizationId, { limit: 50, period: "all_time" }),
+    getLeaderboard(organizationId, { limit: 50, period: "this_month" }),
+    getUserXpTotal(user.id, organizationId),
+    getUserStreak(user.id, organizationId),
   ]);
 
   const level = calculateLevel(totalXp);

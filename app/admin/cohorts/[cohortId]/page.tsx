@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Users, Calendar, BookOpen } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { getCohortWithEnrollments } from "@/lib/domains/courses/queries";
 import { ROUTES } from "@/lib/constants/routes";
 import { Badge } from "@/components/ui/badge";
@@ -38,23 +38,11 @@ export default async function CohortDetailPage({
   params: Promise<{ cohortId: string }>;
 }) {
   const { cohortId } = await params;
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) notFound();
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id")
-    .eq("id", user.id)
-    .single();
-  if (!profile) notFound();
+  const { organizationId } = await getAuthenticatedUser();
 
   const cohort = await getCohortWithEnrollments(
     cohortId,
-    profile.organization_id
+    organizationId
   );
   if (!cohort) notFound();
 

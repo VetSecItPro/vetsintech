@@ -1,6 +1,5 @@
-import { redirect, notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { ROUTES } from "@/lib/constants/routes";
+import { notFound } from "next/navigation";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { getCourseWithModules, getLessonById } from "@/lib/domains/courses/queries";
 import {
   getCourseProgress,
@@ -31,26 +30,12 @@ export default async function LessonPlayerPage({
   params: Promise<{ courseId: string; lessonId: string }>;
 }) {
   const { courseId, lessonId } = await params;
-  const supabase = await createClient();
-
-  // Auth check
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(ROUTES.login);
-
-  // Get user profile
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id")
-    .eq("id", user.id)
-    .single();
-  if (!profile) redirect(ROUTES.login);
+  const { user, organizationId, supabase } = await getAuthenticatedUser();
 
   // Fetch lesson and full course structure in parallel
   const [lesson, course] = await Promise.all([
     getLessonById(lessonId),
-    getCourseWithModules(courseId, profile.organization_id),
+    getCourseWithModules(courseId, organizationId),
   ]);
 
   if (!lesson || !course) notFound();

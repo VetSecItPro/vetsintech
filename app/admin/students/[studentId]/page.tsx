@@ -1,4 +1,4 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -10,7 +10,7 @@ import {
   Trophy,
   ClipboardList,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { ROUTES } from "@/lib/constants/routes";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -39,19 +39,7 @@ export default async function StudentDetailPage({
   params: Promise<{ studentId: string }>;
 }) {
   const { studentId } = await params;
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(ROUTES.login);
-
-  const { data: adminProfile } = await supabase
-    .from("profiles")
-    .select("organization_id")
-    .eq("id", user.id)
-    .single();
-  if (!adminProfile) redirect(ROUTES.login);
+  const { organizationId, supabase } = await getAuthenticatedUser();
 
   // Get student profile
   const { data: student } = await supabase
@@ -67,7 +55,7 @@ export default async function StudentDetailPage({
     .from("user_roles")
     .select("role")
     .eq("user_id", studentId)
-    .eq("organization_id", adminProfile.organization_id)
+    .eq("organization_id", organizationId)
     .maybeSingle();
 
   if (!studentRole) notFound();

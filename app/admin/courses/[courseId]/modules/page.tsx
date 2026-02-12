@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { getCourseWithModules } from "@/lib/domains/courses/queries";
 import { ROUTES } from "@/lib/constants/routes";
 import { Badge } from "@/components/ui/badge";
@@ -19,24 +19,9 @@ export default async function ModulesPage({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = await params;
-  const supabase = await createClient();
+  const { organizationId } = await getAuthenticatedUser();
 
-  // Get org from profile
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) notFound();
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile) notFound();
-
-  const course = await getCourseWithModules(courseId, profile.organization_id);
+  const course = await getCourseWithModules(courseId, organizationId);
   if (!course) notFound();
 
   return (

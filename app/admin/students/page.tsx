@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { ROUTES } from "@/lib/constants/routes";
 import { Plus, Search, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -40,26 +39,14 @@ export default async function AdminStudentsPage({
   }>;
 }) {
   const { search, cohort_id, status } = await searchParams;
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(ROUTES.login);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id")
-    .eq("id", user.id)
-    .single();
-  if (!profile) redirect(ROUTES.login);
+  const { organizationId, supabase } = await getAuthenticatedUser();
 
   // Build query for students in the organization
   // Get user IDs with student role in this org
   const rolesQuery = supabase
     .from("user_roles")
     .select("user_id")
-    .eq("organization_id", profile.organization_id)
+    .eq("organization_id", organizationId)
     .eq("role", "student");
 
   const { data: studentRoles } = await rolesQuery;
@@ -164,7 +151,7 @@ export default async function AdminStudentsPage({
   const { data: cohorts } = await supabase
     .from("cohorts")
     .select("id, name")
-    .eq("organization_id", profile.organization_id)
+    .eq("organization_id", organizationId)
     .order("name");
 
   return (

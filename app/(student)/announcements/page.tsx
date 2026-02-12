@@ -1,6 +1,4 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { ROUTES } from "@/lib/constants/routes";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { getAnnouncements } from "@/lib/domains/notifications/queries";
 import { formatDistanceToNow } from "date-fns";
 import { Megaphone } from "lucide-react";
@@ -10,21 +8,9 @@ export const metadata = {
 };
 
 export default async function AnnouncementsPage() {
-  const supabase = await createClient();
+  const { organizationId } = await getAuthenticatedUser();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(ROUTES.login);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id")
-    .eq("id", user.id)
-    .single();
-  if (!profile) redirect(ROUTES.login);
-
-  const announcements = await getAnnouncements(profile.organization_id, {
+  const announcements = await getAnnouncements(organizationId, {
     limit: 50,
   });
 

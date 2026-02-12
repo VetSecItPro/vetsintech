@@ -1,6 +1,7 @@
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { ROUTES } from "@/lib/constants/routes";
 import { getDiscussionWithPosts } from "@/lib/domains/community/queries";
 import { formatDistanceToNow } from "date-fns";
@@ -33,12 +34,7 @@ interface ThreadPageProps {
 
 export default async function ThreadPage({ params }: ThreadPageProps) {
   const { threadId } = await params;
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(ROUTES.login);
+  const { user } = await getAuthenticatedUser();
 
   const thread = await getDiscussionWithPosts(threadId, user.id);
   if (!thread) notFound();

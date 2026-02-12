@@ -1,6 +1,4 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { ROUTES } from "@/lib/constants/routes";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { getCalendarItems } from "@/lib/domains/calendar/queries";
 import { getCourses } from "@/lib/domains/courses/queries";
 import { AdminCalendarClient } from "./admin-calendar-client";
@@ -16,27 +14,15 @@ export const metadata = {
 };
 
 export default async function AdminCalendarPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(ROUTES.login);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id")
-    .eq("id", user.id)
-    .single();
-  if (!profile) redirect(ROUTES.login);
+  const { organizationId } = await getAuthenticatedUser();
 
   const now = new Date();
   const startDate = startOfMonth(subMonths(now, 1)).toISOString();
   const endDate = endOfMonth(addMonths(now, 1)).toISOString();
 
   const [items, courses] = await Promise.all([
-    getCalendarItems(profile.organization_id, startDate, endDate),
-    getCourses(profile.organization_id),
+    getCalendarItems(organizationId, startDate, endDate),
+    getCourses(organizationId),
   ]);
 
   return (
@@ -51,7 +37,7 @@ export default async function AdminCalendarPage() {
       <AdminCalendarClient
         initialItems={items}
         courses={courses.map((c) => ({ id: c.id, title: c.title }))}
-        organizationId={profile.organization_id}
+        organizationId={organizationId}
       />
     </div>
   );

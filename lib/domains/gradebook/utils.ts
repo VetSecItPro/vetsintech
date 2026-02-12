@@ -72,23 +72,30 @@ export function calculateOverallGrade(
 // ============================================================================
 
 /**
+ * Grade threshold table: each entry is [minimum percentage, letter grade].
+ * Ordered descending so the first match is the correct grade.
+ */
+const GRADE_THRESHOLDS: ReadonlyArray<[number, string]> = [
+  [93, "A"],
+  [90, "A-"],
+  [87, "B+"],
+  [83, "B"],
+  [80, "B-"],
+  [77, "C+"],
+  [73, "C"],
+  [70, "C-"],
+  [67, "D+"],
+  [63, "D"],
+  [60, "D-"],
+];
+
+/**
  * Convert a numeric percentage to a letter grade.
  * Standard scale: A (93+), A- (90+), B+ (87+), B (83+), B- (80+),
  * C+ (77+), C (73+), C- (70+), D+ (67+), D (63+), D- (60+), F (<60).
  */
 export function gradeToLetter(percentage: number): string {
-  if (percentage >= 93) return "A";
-  if (percentage >= 90) return "A-";
-  if (percentage >= 87) return "B+";
-  if (percentage >= 83) return "B";
-  if (percentage >= 80) return "B-";
-  if (percentage >= 77) return "C+";
-  if (percentage >= 73) return "C";
-  if (percentage >= 70) return "C-";
-  if (percentage >= 67) return "D+";
-  if (percentage >= 63) return "D";
-  if (percentage >= 60) return "D-";
-  return "F";
+  return GRADE_THRESHOLDS.find(([min]) => percentage >= min)?.[1] ?? "F";
 }
 
 // ============================================================================
@@ -103,46 +110,49 @@ export function formatGradePercentage(percentage: number): string {
 }
 
 /**
- * Get Tailwind color classes for a letter grade.
+ * Tailwind color classes for each letter grade (text and background variants).
+ */
+const GRADE_COLORS: Record<string, { text: string; bg: string }> = {
+  A: {
+    text: "text-green-600 dark:text-green-400",
+    bg: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
+  },
+  B: {
+    text: "text-blue-600 dark:text-blue-400",
+    bg: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+  },
+  C: {
+    text: "text-yellow-600 dark:text-yellow-400",
+    bg: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
+  },
+  D: {
+    text: "text-orange-600 dark:text-orange-400",
+    bg: "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300",
+  },
+  F: {
+    text: "text-red-600 dark:text-red-400",
+    bg: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+  },
+};
+
+const DEFAULT_GRADE_COLORS = {
+  text: "text-slate-600 dark:text-slate-400",
+  bg: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+};
+
+/**
+ * Get Tailwind text color classes for a letter grade.
  * A = green, B = blue, C = yellow, D = orange, F = red.
  */
 export function getGradeColor(letterGrade: string): string {
-  const base = letterGrade.charAt(0);
-  switch (base) {
-    case "A":
-      return "text-green-600 dark:text-green-400";
-    case "B":
-      return "text-blue-600 dark:text-blue-400";
-    case "C":
-      return "text-yellow-600 dark:text-yellow-400";
-    case "D":
-      return "text-orange-600 dark:text-orange-400";
-    case "F":
-      return "text-red-600 dark:text-red-400";
-    default:
-      return "text-slate-600 dark:text-slate-400";
-  }
+  return (GRADE_COLORS[letterGrade.charAt(0)] ?? DEFAULT_GRADE_COLORS).text;
 }
 
 /**
  * Get Tailwind background color classes for a letter grade badge.
  */
 export function getGradeBgColor(letterGrade: string): string {
-  const base = letterGrade.charAt(0);
-  switch (base) {
-    case "A":
-      return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300";
-    case "B":
-      return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300";
-    case "C":
-      return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300";
-    case "D":
-      return "bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300";
-    case "F":
-      return "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300";
-    default:
-      return "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300";
-  }
+  return (GRADE_COLORS[letterGrade.charAt(0)] ?? DEFAULT_GRADE_COLORS).bg;
 }
 
 /**

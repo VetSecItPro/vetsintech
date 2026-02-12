@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { ROUTES } from "@/lib/constants/routes";
 import { getAdminAnnouncements } from "@/lib/domains/notifications/queries";
 import { formatDistanceToNow } from "date-fns";
@@ -22,21 +21,10 @@ export const metadata = {
 };
 
 export default async function AdminAnnouncementsPage() {
-  const supabase = await createClient();
+  const { organizationId, supabase } = await getAuthenticatedUser();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(ROUTES.login);
+  const announcements = await getAdminAnnouncements(organizationId);
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id")
-    .eq("id", user.id)
-    .single();
-  if (!profile) redirect(ROUTES.login);
-
-  const announcements = await getAdminAnnouncements(profile.organization_id);
 
   // Fetch cohort names for display
   const cohortIds = announcements

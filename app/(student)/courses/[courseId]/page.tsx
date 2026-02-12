@@ -1,6 +1,7 @@
-import { redirect, notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { ROUTES } from "@/lib/constants/routes";
 import { getCourseWithModules } from "@/lib/domains/courses/queries";
 import {
@@ -53,24 +54,10 @@ export default async function CourseOverviewPage({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = await params;
-  const supabase = await createClient();
-
-  // Auth check
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(ROUTES.login);
-
-  // Get user profile for org
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id")
-    .eq("id", user.id)
-    .single();
-  if (!profile) redirect(ROUTES.login);
+  const { user, organizationId } = await getAuthenticatedUser();
 
   // Fetch course with modules and lessons
-  const course = await getCourseWithModules(courseId, profile.organization_id);
+  const course = await getCourseWithModules(courseId, organizationId);
   if (!course) notFound();
 
   // Find student's enrollment for this course (via cohort)
