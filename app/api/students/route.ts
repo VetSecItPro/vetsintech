@@ -21,8 +21,10 @@ export async function GET(request: Request) {
     const search = searchParams.get("search") || undefined;
     const cohort_id = searchParams.get("cohort_id") || undefined;
     const status = searchParams.get("status") || undefined;
-    const limit = parseInt(searchParams.get("limit") || "50", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
+    const limitRaw = parseInt(searchParams.get("limit") || "50", 10);
+    const limit = Number.isNaN(limitRaw) ? 50 : Math.min(Math.max(1, limitRaw), 100);
+    const offsetRaw = parseInt(searchParams.get("offset") || "0", 10);
+    const offset = Number.isNaN(offsetRaw) ? 0 : Math.max(0, offsetRaw);
 
     const supabase = await createClient();
 
@@ -148,8 +150,12 @@ export async function POST(request: Request) {
 
     if (createError) {
       console.error("Create user error:", createError);
+      // Provide safe user-facing message without leaking internals
+      const safeMessage = createError.message?.includes("already registered")
+        ? "A user with this email already exists"
+        : "Failed to create user";
       return NextResponse.json(
-        { error: createError.message || "Failed to create user" },
+        { error: safeMessage },
         { status: 400 }
       );
     }

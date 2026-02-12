@@ -12,12 +12,18 @@ export async function GET(request: Request) {
 
     if (view === "catalog") {
       const catalog = await getBadgeCatalog(auth.user.id, auth.organizationId);
-      return NextResponse.json({ data: catalog }, { status: 200 });
+      return NextResponse.json({ data: catalog }, {
+        status: 200,
+        headers: { "Cache-Control": "private, max-age=120, stale-while-revalidate=300" },
+      });
     }
 
     // Default: return earned badges
     const earned = await getUserBadges(auth.user.id, auth.organizationId);
-    return NextResponse.json({ data: earned }, { status: 200 });
+    return NextResponse.json({ data: earned }, {
+      status: 200,
+      headers: { "Cache-Control": "private, max-age=120, stale-while-revalidate=300" },
+    });
   } catch (error) {
     console.error("GET /api/gamification/badges error:", error);
     return NextResponse.json(

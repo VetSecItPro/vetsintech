@@ -55,8 +55,11 @@ export async function PATCH(
     const lesson = await updateLesson(lessonId, parsed.data);
     return NextResponse.json({ data: lesson });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("PATCH /api/courses/.../lessons/[lessonId] error:", err);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 

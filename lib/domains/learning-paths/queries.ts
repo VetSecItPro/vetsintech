@@ -303,27 +303,95 @@ export async function getPublishedPathsWithProgress(
     (enrollments || []).map((e) => [e.learning_path_id, e])
   );
 
-  // For enrolled paths, get progress
-  const result: LearningPathWithProgress[] = [];
-  for (const path of paths || []) {
-    const enrollment = enrollmentMap.get(path.id) || null;
-    let progress_percentage = 0;
+  // Batch-fetch progress for all enrolled paths instead of N+1 queries
+  const enrolledPathIds = Array.from(enrollmentMap.keys());
 
-    if (enrollment) {
-      const prog = await getPathProgress(studentId, path.id);
-      progress_percentage = prog.overall_percentage;
+  const progressMap = new Map<string, number>();
+
+  if (enrolledPathIds.length > 0) {
+    // Get ALL learning_path_courses for enrolled paths in one query
+    const { data: allPathCourses, error: pcError } = await supabase
+      .from("learning_path_courses")
+      .select("learning_path_id, course_id")
+      .in("learning_path_id", enrolledPathIds);
+
+    if (pcError) throw pcError;
+
+    // Get ALL course_progress records for the student in one query
+    const courseIds = [
+      ...new Set((allPathCourses || []).map((pc) => pc.course_id)),
+    ];
+
+    const courseProgressMap = new Map<
+      string,
+      { progress_percentage: number; completed_at: string | null }
+    >();
+
+    if (courseIds.length > 0) {
+      const { data: progressRecords, error: progError } = await supabase
+        .from("course_progress")
+        .select("course_id, progress_percentage, completed_at")
+        .eq("user_id", studentId)
+        .in("course_id", courseIds);
+
+      if (progError) throw progError;
+
+      // Build a map of course_id -> best progress
+      for (const p of progressRecords || []) {
+        const existing = courseProgressMap.get(p.course_id);
+        if (
+          !existing ||
+          p.progress_percentage > existing.progress_percentage
+        ) {
+          courseProgressMap.set(p.course_id, {
+            progress_percentage: p.progress_percentage,
+            completed_at: p.completed_at,
+          });
+        }
+      }
     }
 
-    result.push({
+    // Group path courses by learning_path_id
+    const pathCoursesMap = new Map<
+      string,
+      { course_id: string }[]
+    >();
+    for (const pc of allPathCourses || []) {
+      const list = pathCoursesMap.get(pc.learning_path_id) || [];
+      list.push(pc);
+      pathCoursesMap.set(pc.learning_path_id, list);
+    }
+
+    // Calculate overall progress for each enrolled path
+    for (const pathId of enrolledPathIds) {
+      const courses = pathCoursesMap.get(pathId) || [];
+      if (courses.length === 0) {
+        progressMap.set(pathId, 0);
+        continue;
+      }
+      const total = courses.reduce((sum, c) => {
+        const prog = courseProgressMap.get(c.course_id);
+        return sum + (prog?.progress_percentage ?? 0);
+      }, 0);
+      progressMap.set(pathId, Math.round(total / courses.length));
+    }
+  }
+
+  // Build result in a single pass
+  const result: LearningPathWithProgress[] = (paths || []).map((path) => {
+    const enrollment = enrollmentMap.get(path.id) || null;
+    return {
       ...path,
       tags: path.tags || [],
       course_count:
         (path.learning_path_courses as unknown as { count: number }[])?.[0]
           ?.count ?? 0,
       enrollment,
-      progress_percentage,
-    });
-  }
+      progress_percentage: enrollment
+        ? (progressMap.get(path.id) ?? 0)
+        : 0,
+    };
+  });
 
   return result;
 }

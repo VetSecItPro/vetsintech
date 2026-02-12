@@ -201,7 +201,7 @@ export async function getLeaderboard(
     xpQuery = xpQuery.gte("created_at", startOfMonth.toISOString());
   }
 
-  const { data: xpRows, error: xpError } = await xpQuery;
+  const { data: xpRows, error: xpError } = await xpQuery.limit(10000);
   if (xpError) throw xpError;
 
   // Aggregate XP per user

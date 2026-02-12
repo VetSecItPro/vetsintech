@@ -25,7 +25,10 @@ export async function GET(request: Request) {
           period,
         },
       },
-      { status: 200 }
+      {
+        status: 200,
+        headers: { "Cache-Control": "private, max-age=60, stale-while-revalidate=300" },
+      }
     );
   } catch (error) {
     console.error("GET /api/gamification/leaderboard error:", error);

@@ -61,6 +61,7 @@ export async function getLessonCompletions(
     .select("*")
     .eq("user_id", userId)
     .eq("cohort_id", cohortId)
+    .limit(2000)
     .order("completed_at", { ascending: true });
 
   if (error) throw error;

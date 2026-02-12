@@ -134,8 +134,11 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Upload failed";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("POST /api/files error:", err);
+    return NextResponse.json(
+      { error: "Upload failed" },
+      { status: 500 }
+    );
   }
 }
 

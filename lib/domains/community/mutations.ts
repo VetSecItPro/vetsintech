@@ -37,6 +37,7 @@ export async function createDiscussion(
 
 export async function updateDiscussion(
   discussionId: string,
+  organizationId: string,
   input: UpdateDiscussionInput
 ): Promise<Discussion> {
   const supabase = await createClient();
@@ -45,10 +46,12 @@ export async function updateDiscussion(
   if (input.title !== undefined) payload.title = input.title;
   if (input.body !== undefined) payload.body = input.body;
 
+  // Security: scope to organization to prevent cross-org mutation
   const { data, error } = await supabase
     .from("discussions")
     .update(payload)
     .eq("id", discussionId)
+    .eq("organization_id", organizationId)
     .select()
     .single();
 
@@ -56,13 +59,18 @@ export async function updateDiscussion(
   return data;
 }
 
-export async function deleteDiscussion(discussionId: string): Promise<void> {
+export async function deleteDiscussion(
+  discussionId: string,
+  organizationId: string
+): Promise<void> {
   const supabase = await createClient();
 
+  // Security: scope to organization to prevent cross-org deletion
   const { error } = await supabase
     .from("discussions")
     .delete()
-    .eq("id", discussionId);
+    .eq("id", discussionId)
+    .eq("organization_id", organizationId);
 
   if (error) throw error;
 }
@@ -140,14 +148,17 @@ export async function createPost(
 
 export async function updatePost(
   postId: string,
+  authorId: string,
   body: Record<string, unknown>
 ): Promise<DiscussionPost> {
   const supabase = await createClient();
 
+  // Security: scope to author to prevent editing others' posts
   const { data, error } = await supabase
     .from("discussion_posts")
     .update({ body })
     .eq("id", postId)
+    .eq("author_id", authorId)
     .select()
     .single();
 

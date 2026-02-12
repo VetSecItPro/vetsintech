@@ -100,6 +100,7 @@ export async function getAdminAnnouncements(
     `
     )
     .eq("organization_id", organizationId)
+    .limit(500)
     .order("created_at", { ascending: false });
 
   if (error) throw error;

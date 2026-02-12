@@ -47,6 +47,7 @@ export async function createAnnouncement(
  */
 export async function updateAnnouncement(
   announcementId: string,
+  organizationId: string,
   input: UpdateAnnouncementInput
 ): Promise<Announcement> {
   const supabase = await createClient();
@@ -57,10 +58,12 @@ export async function updateAnnouncement(
   if (input.cohort_id !== undefined)
     payload.cohort_id = input.cohort_id || null;
 
+  // Security: scope to organization to prevent cross-org mutation
   const { data, error } = await supabase
     .from("announcements")
     .update(payload)
     .eq("id", announcementId)
+    .eq("organization_id", organizationId)
     .select()
     .single();
 
@@ -72,14 +75,17 @@ export async function updateAnnouncement(
  * Delete an announcement.
  */
 export async function deleteAnnouncement(
-  announcementId: string
+  announcementId: string,
+  organizationId: string
 ): Promise<void> {
   const supabase = await createClient();
 
+  // Security: scope to organization to prevent cross-org deletion
   const { error } = await supabase
     .from("announcements")
     .delete()
-    .eq("id", announcementId);
+    .eq("id", announcementId)
+    .eq("organization_id", organizationId);
 
   if (error) throw error;
 }
@@ -88,10 +94,12 @@ export async function deleteAnnouncement(
  * Publish an announcement. Sets is_published=true and published_at=now().
  */
 export async function publishAnnouncement(
-  announcementId: string
+  announcementId: string,
+  organizationId: string
 ): Promise<Announcement> {
   const supabase = await createClient();
 
+  // Security: scope to organization to prevent cross-org publish
   const { data, error } = await supabase
     .from("announcements")
     .update({
@@ -99,6 +107,7 @@ export async function publishAnnouncement(
       published_at: new Date().toISOString(),
     })
     .eq("id", announcementId)
+    .eq("organization_id", organizationId)
     .select()
     .single();
 
@@ -110,10 +119,12 @@ export async function publishAnnouncement(
  * Unpublish an announcement. Sets is_published=false and clears published_at.
  */
 export async function unpublishAnnouncement(
-  announcementId: string
+  announcementId: string,
+  organizationId: string
 ): Promise<Announcement> {
   const supabase = await createClient();
 
+  // Security: scope to organization to prevent cross-org unpublish
   const { data, error } = await supabase
     .from("announcements")
     .update({
@@ -121,6 +132,7 @@ export async function unpublishAnnouncement(
       published_at: null,
     })
     .eq("id", announcementId)
+    .eq("organization_id", organizationId)
     .select()
     .single();
 
@@ -192,10 +204,12 @@ export async function createBulkNotifications(
  * Mark a single notification as read.
  */
 export async function markAsRead(
-  notificationId: string
+  notificationId: string,
+  userId: string
 ): Promise<Notification> {
   const supabase = await createClient();
 
+  // Security: scope to user to prevent marking others' notifications
   const { data, error } = await supabase
     .from("notifications")
     .update({
@@ -203,6 +217,7 @@ export async function markAsRead(
       read_at: new Date().toISOString(),
     })
     .eq("id", notificationId)
+    .eq("user_id", userId)
     .select()
     .single();
 
@@ -236,14 +251,17 @@ export async function markAllAsRead(
  * Delete a single notification.
  */
 export async function deleteNotification(
-  notificationId: string
+  notificationId: string,
+  userId: string
 ): Promise<void> {
   const supabase = await createClient();
 
+  // Security: scope to user to prevent deleting others' notifications
   const { error } = await supabase
     .from("notifications")
     .delete()
-    .eq("id", notificationId);
+    .eq("id", notificationId)
+    .eq("user_id", userId);
 
   if (error) throw error;
 }
