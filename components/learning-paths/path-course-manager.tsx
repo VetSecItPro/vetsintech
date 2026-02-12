@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,11 +57,7 @@ export function PathCourseManager({ pathId }: PathCourseManagerProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, [pathId]);
-
-  async function fetchData() {
+  const fetchData = useCallback(async () => {
     try {
       const [coursesRes, allCoursesRes] = await Promise.all([
         fetch(`/api/paths/${pathId}/courses`),
@@ -82,7 +78,11 @@ export function PathCourseManager({ pathId }: PathCourseManagerProps) {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [pathId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const addedCourseIds = new Set(courses.map((c) => c.course_id));
   const selectableCourses = availableCourses.filter(

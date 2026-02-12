@@ -159,7 +159,6 @@ export class UdemyAdapter implements PlatformAdapter {
     let page = 1;
     const pageSize = 100;
 
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const pageParams = {
         ...params,

@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { ROUTES } from "@/lib/constants/routes";
 import { BookOpen, Clock, ArrowRight } from "lucide-react";
@@ -112,9 +113,11 @@ export default async function CoursesPage() {
                 >
                   <div className="flex h-32 items-center justify-center bg-gradient-to-br from-blue-950 to-slate-900">
                     {cohort.course.thumbnail_url ? (
-                      <img
+                      <Image
                         src={cohort.course.thumbnail_url}
                         alt={cohort.course.title}
+                        width={400}
+                        height={300}
                         className="h-full w-full object-cover"
                       />
                     ) : (
@@ -179,9 +182,11 @@ export default async function CoursesPage() {
               >
                 <div className="flex h-32 items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900">
                   {course.thumbnail_url ? (
-                    <img
+                    <Image
                       src={course.thumbnail_url}
                       alt={course.title}
+                      width={400}
+                      height={300}
                       className="h-full w-full object-cover"
                     />
                   ) : (

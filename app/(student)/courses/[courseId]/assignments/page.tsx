@@ -50,7 +50,7 @@ export default function StudentAssignmentsPage() {
         const withStatus: AssignmentWithStatus[] = await Promise.all(
           published.map(async (assignment: Assignment) => {
             try {
-              const subRes = await fetch(
+              await fetch(
                 `/api/assignments/${assignment.id}/submissions`
               );
               // Students may not have access to list all submissions;

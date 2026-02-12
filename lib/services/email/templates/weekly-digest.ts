@@ -27,7 +27,6 @@ export function weeklyDigestSubject(): string {
 }
 
 function progressBar(percent: number): string {
-  const filled = Math.round(percent / 10);
   const bar = `
     <div style="width: 100%; height: 8px; background-color: #334155; border-radius: 4px; overflow: hidden;">
       <div style="width: ${percent}%; height: 8px; background-color: #C5A55A; border-radius: 4px;"></div>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
 import { BookOpen, Clock, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,9 +42,11 @@ export default async function CatalogPage() {
               {/* Thumbnail placeholder */}
               <div className="flex h-40 items-center justify-center bg-gradient-to-br from-blue-950 to-slate-900">
                 {course.thumbnail_url ? (
-                  <img
+                  <Image
                     src={course.thumbnail_url}
                     alt={course.title}
+                    width={400}
+                    height={300}
                     className="h-full w-full object-cover"
                   />
                 ) : (

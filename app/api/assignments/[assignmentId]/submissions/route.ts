@@ -3,7 +3,6 @@ import { z } from "zod/v4";
 import { requireAuth, isAuthError } from "@/lib/supabase/api-middleware";
 import {
   getSubmissionsByAssignment,
-  getAssignmentById,
 } from "@/lib/domains/assignments/queries";
 import { submitAssignment } from "@/lib/domains/assignments/mutations";
 import { submitAssignmentSchema } from "@/lib/domains/assignments/validation";

@@ -1,5 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import {
   ArrowLeft,
   User,
@@ -115,9 +116,11 @@ export default async function StudentDetailPage({
           <div className="flex items-start gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-800">
               {student.avatar_url ? (
-                <img
+                <Image
                   src={student.avatar_url}
                   alt={student.full_name || "Student"}
+                  width={56}
+                  height={56}
                   className="h-14 w-14 rounded-full object-cover"
                 />
               ) : (

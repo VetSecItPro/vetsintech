@@ -2,10 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { toast } from "sonner";
 import type { ResourceWithCourse } from "@/lib/domains/resources/types";
-import { ROUTES } from "@/lib/constants/routes";
 import { ResourceLibraryClient } from "@/app/(student)/resources/resource-library-client";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";

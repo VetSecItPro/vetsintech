@@ -40,7 +40,7 @@ export default function StudentAssignmentDetailPage() {
 
   const [assignment, setAssignment] = useState<Assignment | null>(null);
   const [submission, setSubmission] = useState<SubmissionWithFiles | null>(null);
-  const [previousAttempts, setPreviousAttempts] = useState<AssignmentSubmission[]>([]);
+  const [previousAttempts] = useState<AssignmentSubmission[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [content, setContent] = useState("");
