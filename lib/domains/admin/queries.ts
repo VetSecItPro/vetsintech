@@ -4,6 +4,11 @@
 // ============================================================================
 
 import { createClient } from "@/lib/supabase/server";
+import {
+  cached,
+  CacheTags,
+  CacheDurations,
+} from "@/lib/cache";
 import type {
   DashboardStats,
   EnrollmentTrend,
@@ -483,3 +488,43 @@ export async function getStudentProgressTable(
     return [];
   }
 }
+
+// ============================================================================
+// Cached Variants
+// ============================================================================
+
+/**
+ * Cached version of getDashboardStats.
+ * Revalidates every 60s or on course/enrollment/cohort mutations.
+ */
+export const getCachedDashboardStats = (orgId: string) =>
+  cached(
+    () => getDashboardStats(orgId),
+    ["dashboard-stats", orgId],
+    [CacheTags.dashboardStats(orgId)],
+    CacheDurations.DASHBOARD_STATS
+  )();
+
+/**
+ * Cached version of getEnrollmentTrends.
+ * Revalidates every 120s or on enrollment mutations.
+ */
+export const getCachedEnrollmentTrends = (orgId: string, days?: number) =>
+  cached(
+    () => getEnrollmentTrends(orgId, days),
+    ["enrollment-trends", orgId, String(days ?? 30)],
+    [CacheTags.enrollmentTrends(orgId)],
+    CacheDurations.ENROLLMENT_TRENDS
+  )();
+
+/**
+ * Cached version of getCourseAnalytics.
+ * Revalidates every 120s or on course/enrollment mutations.
+ */
+export const getCachedCourseAnalytics = (orgId: string) =>
+  cached(
+    () => getCourseAnalytics(orgId),
+    ["course-analytics", orgId],
+    [CacheTags.courseAnalytics(orgId)],
+    CacheDurations.COURSE_ANALYTICS
+  )();

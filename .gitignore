@@ -70,3 +70,5 @@ e2e/.auth/
 .sentryclirc
 .vercel
 .env*.local
+.cleancode/
+.cleancode-audit.json
