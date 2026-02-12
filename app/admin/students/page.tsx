@@ -112,13 +112,26 @@ export default async function AdminStudentsPage({
     );
   }
 
+  // Index enrollments and progress by user_id for O(1) lookups
+  const enrollmentsByUser = new Map<string, typeof enrollments>();
+  for (const e of enrollments || []) {
+    const list = enrollmentsByUser.get(e.user_id) || [];
+    list.push(e);
+    enrollmentsByUser.set(e.user_id, list);
+  }
+
+  const progressByUser = new Map<string, typeof progressData>();
+  for (const p of progressData || []) {
+    const list = progressByUser.get(p.user_id) || [];
+    list.push(p);
+    progressByUser.set(p.user_id, list);
+  }
+
   // Build enriched student rows
   const enrichedStudents: StudentRow[] = (students || [])
     .filter((s) => !cohortFilterIds || cohortFilterIds.has(s.id))
     .map((s) => {
-      const studentEnrollments = (enrollments || []).filter(
-        (e) => e.user_id === s.id
-      );
+      const studentEnrollments = enrollmentsByUser.get(s.id) || [];
       const cohortNames = studentEnrollments
         .map((e) => {
           const cohort = e.cohorts as unknown as { id: string; name: string } | null;
@@ -126,13 +139,11 @@ export default async function AdminStudentsPage({
         })
         .filter(Boolean) as string[];
 
-      const studentProgress = (progressData || []).filter(
-        (p) => p.user_id === s.id
-      );
+      const studentProgress = progressByUser.get(s.id) || [];
       const avgProgress =
         studentProgress.length > 0
           ? Math.round(
-              studentProgress.reduce((sum, p) => sum + (p.progress_pct || 0), 0) /
+              studentProgress.reduce((sum, p) => sum + ((p as { progress_pct: number }).progress_pct || 0), 0) /
                 studentProgress.length
             )
           : 0;

@@ -203,17 +203,25 @@ export async function getCourseAnalytics(
     if (coursesError) throw coursesError;
     if (!courses || courses.length === 0) return [];
 
+    // Batch-fetch all cohorts for all courses (avoids N+1)
+    const courseIds = courses.map((c) => c.id);
+    const { data: allCohorts } = await supabase
+      .from("cohorts")
+      .select("id, course_id")
+      .in("course_id", courseIds)
+      .eq("organization_id", orgId);
+
+    const cohortsByCourse = new Map<string, string[]>();
+    for (const cohort of allCohorts || []) {
+      const list = cohortsByCourse.get(cohort.course_id) || [];
+      list.push(cohort.id);
+      cohortsByCourse.set(cohort.course_id, list);
+    }
+
     const analytics: CourseAnalytics[] = [];
 
     for (const course of courses) {
-      // Get cohort IDs for this course within this org
-      const { data: cohorts } = await supabase
-        .from("cohorts")
-        .select("id")
-        .eq("course_id", course.id)
-        .eq("organization_id", orgId);
-
-      const cohortIds = cohorts?.map((c) => c.id) ?? [];
+      const cohortIds = cohortsByCourse.get(course.id) ?? [];
       if (cohortIds.length === 0) {
         analytics.push({
           courseId: course.id,
@@ -379,7 +387,6 @@ export async function getStudentProgressTable(
     if (error) throw error;
     if (!data || data.length === 0) return [];
 
-    // For each student-enrollment, also fetch their avg quiz score
     const rows: StudentProgressRow[] = [];
 
     // Supabase returns joined relations with varying shapes depending on
@@ -400,7 +407,31 @@ export async function getStudentProgressTable(
       }> | null;
     };
 
-    for (const row of (data as unknown as EnrollmentRow[])) {
+    const typedData = data as unknown as EnrollmentRow[];
+
+    // Batch-fetch all quiz attempts for visible students (avoids N+1)
+    const userIds = [...new Set(typedData.map((r) => r.user_id))];
+    const cohortIds = [...new Set(typedData.map((r) => r.cohort.id))];
+
+    const { data: allAttempts } = userIds.length > 0
+      ? await supabase
+          .from("quiz_attempts")
+          .select("user_id, cohort_id, score")
+          .in("user_id", userIds)
+          .in("cohort_id", cohortIds)
+          .not("score", "is", null)
+      : { data: [] };
+
+    // Index attempts by user_id:cohort_id for O(1) lookup
+    const attemptsByKey = new Map<string, number[]>();
+    for (const attempt of allAttempts || []) {
+      const key = `${attempt.user_id}:${attempt.cohort_id}`;
+      const scores = attemptsByKey.get(key) || [];
+      scores.push(attempt.score ?? 0);
+      attemptsByKey.set(key, scores);
+    }
+
+    for (const row of typedData) {
       const user = row.user;
       const cohort = row.cohort;
       const course = cohort.course;
@@ -414,18 +445,13 @@ export async function getStudentProgressTable(
         if (!nameMatch && !emailMatch) continue;
       }
 
-      // Fetch quiz average for this student in this cohort
-      const { data: attempts } = await supabase
-        .from("quiz_attempts")
-        .select("score")
-        .eq("user_id", user.id)
-        .eq("cohort_id", cohort.id)
-        .not("score", "is", null);
-
+      // Look up pre-fetched quiz scores
+      const key = `${user.id}:${cohort.id}`;
+      const scores = attemptsByKey.get(key) || [];
       let quizAvg = 0;
-      if (attempts && attempts.length > 0) {
-        const sum = attempts.reduce((acc, a) => acc + (a.score ?? 0), 0);
-        quizAvg = Math.round((sum / attempts.length) * 10) / 10;
+      if (scores.length > 0) {
+        const sum = scores.reduce((acc, s) => acc + s, 0);
+        quizAvg = Math.round((sum / scores.length) * 10) / 10;
       }
 
       rows.push({
