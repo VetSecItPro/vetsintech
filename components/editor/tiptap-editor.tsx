@@ -1,17 +1,18 @@
 "use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, ReactNodeViewRenderer } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import LinkExtension from "@tiptap/extension-link";
 import ImageExtension from "@tiptap/extension-image";
 import Placeholder from "@tiptap/extension-placeholder";
 import UnderlineExtension from "@tiptap/extension-underline";
 import TextAlign from "@tiptap/extension-text-align";
-import Youtube from "@tiptap/extension-youtube";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import { common, createLowlight } from "lowlight";
 import { Toolbar } from "./toolbar";
 import { cn } from "@/lib/utils";
+import { VideoEmbed } from "./extensions/video-embed";
+import { CodeBlockHighlight } from "./extensions/code-block-highlight";
 
 const lowlight = createLowlight(common);
 
@@ -54,12 +55,12 @@ export function TiptapEditor({
       TextAlign.configure({
         types: ["heading", "paragraph"],
       }),
-      Youtube.configure({
-        HTMLAttributes: {
-          class: "rounded-lg my-4 w-full aspect-video",
+      VideoEmbed,
+      CodeBlockLowlight.extend({
+        addNodeView() {
+          return ReactNodeViewRenderer(CodeBlockHighlight);
         },
-      }),
-      CodeBlockLowlight.configure({
+      }).configure({
         lowlight,
       }),
     ],
