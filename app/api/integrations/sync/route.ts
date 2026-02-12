@@ -2,18 +2,23 @@ import { NextResponse } from "next/server";
 import { z } from "zod/v4";
 import { requireAuth, isAuthError } from "@/lib/supabase/api-middleware";
 import { getPlatformConfig } from "@/lib/domains/integrations/queries";
-import {
-  updateSyncStatus,
-  upsertExternalEnrollment,
-  upsertExternalProgress,
-} from "@/lib/domains/integrations/mutations";
+import { syncPlatformData, syncAllPlatforms } from "@/lib/domains/integrations/sync";
 import { getAdapter } from "@/lib/domains/integrations/adapter";
-import { createClient } from "@/lib/supabase/server";
+import { updateSyncStatus } from "@/lib/domains/integrations/mutations";
 
 const syncSchema = z.object({
-  platform: z.enum(["coursera", "pluralsight", "udemy"]),
+  platform: z.enum(["coursera", "pluralsight", "udemy"]).optional(),
+  syncAll: z.boolean().optional(),
 });
 
+/**
+ * POST /api/integrations/sync
+ *
+ * Triggers a sync for a specific platform or all platforms.
+ * Admin only.
+ *
+ * Body: { platform?: string, syncAll?: boolean }
+ */
 export async function POST(request: Request) {
   const auth = await requireAuth(request, ["admin"]);
   if (isAuthError(auth)) return auth;
@@ -29,12 +34,44 @@ export async function POST(request: Request) {
       );
     }
 
-    const { platform } = result.data;
+    const { platform, syncAll } = result.data;
 
-    const config = await getPlatformConfig(
-      auth.organizationId,
-      platform
-    );
+    // Sync all platforms if requested
+    if (syncAll) {
+      const results = await syncAllPlatforms(auth.organizationId);
+
+      const totalEnrollments = results.reduce(
+        (sum, r) => sum + r.enrollmentsSynced,
+        0
+      );
+      const totalProgress = results.reduce(
+        (sum, r) => sum + r.progressSynced,
+        0
+      );
+      const totalErrors = results.reduce(
+        (sum, r) => sum + r.errors.length,
+        0
+      );
+
+      return NextResponse.json({
+        data: {
+          enrollments: totalEnrollments,
+          progress: totalProgress,
+          errors: totalErrors,
+          results,
+        },
+      });
+    }
+
+    // Sync a single platform
+    if (!platform) {
+      return NextResponse.json(
+        { error: "Either 'platform' or 'syncAll: true' is required" },
+        { status: 400 }
+      );
+    }
+
+    const config = await getPlatformConfig(auth.organizationId, platform);
 
     if (!config) {
       return NextResponse.json(
@@ -50,9 +87,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const adapter = getAdapter(platform);
-
     // Validate credentials before syncing
+    const adapter = getAdapter(platform);
     const credentialsValid = await adapter.validateCredentials(
       config.credentials
     );
@@ -64,97 +100,17 @@ export async function POST(request: Request) {
       );
     }
 
-    // Update sync status to syncing
-    await updateSyncStatus(config.id, "syncing");
+    const syncResult = await syncPlatformData(config.id, auth.organizationId);
 
-    try {
-      // Fetch org user emails for matching
-      const supabase = await createClient();
-      const { data: orgUsers } = await supabase
-        .from("profiles")
-        .select("id, email")
-        .eq("organization_id", auth.organizationId);
-
-      const emailToUserId: Record<string, string> = {};
-      const emails: string[] = [];
-      for (const user of orgUsers ?? []) {
-        if (user.email) {
-          emailToUserId[user.email] = user.id;
-          emails.push(user.email);
-        }
-      }
-
-      // Fetch enrollments from external platform
-      const enrollments = await adapter.fetchEnrollments(
-        config.credentials,
-        emails
-      );
-
-      let enrollmentCount = 0;
-      const enrollmentMap: Record<string, string> = {};
-
-      for (const enrollment of enrollments) {
-        const userId = emailToUserId[enrollment.userEmail];
-        if (!userId) continue;
-
-        const upsertResult = await upsertExternalEnrollment({
-          organization_id: auth.organizationId,
-          user_id: userId,
-          platform,
-          external_course_id: enrollment.courseId,
-          external_course_title: enrollment.courseTitle,
-          enrolled_at: enrollment.enrolledAt,
-        });
-
-        enrollmentMap[`${enrollment.userEmail}:${enrollment.courseId}`] =
-          upsertResult.id;
-        enrollmentCount++;
-      }
-
-      // Fetch progress for all enrollments
-      const progressItems = await adapter.fetchProgress(
-        config.credentials,
-        enrollments.map((e) => ({
-          courseId: e.courseId,
-          userEmail: e.userEmail,
-        }))
-      );
-
-      let progressCount = 0;
-
-      for (const item of progressItems) {
-        const enrollmentId =
-          enrollmentMap[`${item.userEmail}:${item.courseId}`];
-        if (!enrollmentId) continue;
-
-        await upsertExternalProgress({
-          external_enrollment_id: enrollmentId,
-          progress_percentage: item.progressPercentage,
-          status: item.status,
-          completed_at: item.completedAt,
-          time_spent_minutes: item.timeSpentMinutes,
-          last_activity_at: item.lastActivityAt,
-          synced_at: new Date().toISOString(),
-        });
-
-        progressCount++;
-      }
-
-      // Update sync status to idle (success)
-      await updateSyncStatus(config.id, "idle");
-
-      return NextResponse.json({
-        data: {
-          enrollments: enrollmentCount,
-          progress: progressCount,
-        },
-      });
-    } catch (syncError) {
-      const errorMessage =
-        syncError instanceof Error ? syncError.message : "Unknown sync error";
-      await updateSyncStatus(config.id, "error", errorMessage);
-      return NextResponse.json({ error: errorMessage }, { status: 500 });
-    }
+    return NextResponse.json({
+      data: {
+        enrollments: syncResult.enrollmentsSynced,
+        progress: syncResult.progressSynced,
+        errors: syncResult.errors.length,
+        durationMs: syncResult.durationMs,
+        errorDetails: syncResult.errors.length > 0 ? syncResult.errors.slice(0, 5) : undefined,
+      },
+    });
   } catch (error) {
     console.error("POST /api/integrations/sync error:", error);
     return NextResponse.json(

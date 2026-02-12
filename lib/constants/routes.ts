@@ -17,6 +17,15 @@ export const ROUTES = {
   notifications: "/notifications",
   certificate: (certId: string) => `/certificates/${certId}`,
   announcements: "/announcements",
+  assignments: (courseId: string) => `/courses/${courseId}/assignments`,
+  assignment: (courseId: string, assignmentId: string) =>
+    `/courses/${courseId}/assignments/${assignmentId}`,
+  paths: "/paths",
+  path: (pathId: string) => `/paths/${pathId}`,
+  resources: "/resources",
+  leaderboard: "/leaderboard",
+  calendar: "/calendar",
+  grades: (courseId: string) => `/courses/${courseId}/grades`,
 
   // Public
   catalog: "/catalog",
@@ -43,4 +52,22 @@ export const ROUTES = {
   adminDiscussions: "/admin/discussions",
   adminFiles: "/admin/files",
   adminSettings: "/admin/settings",
+  adminPaths: "/admin/paths",
+  adminNewPath: "/admin/paths/new",
+  adminPath: (pathId: string) => `/admin/paths/${pathId}`,
+  adminAssignments: (courseId: string) =>
+    `/admin/courses/${courseId}/assignments`,
+  adminAssignment: (courseId: string, assignmentId: string) =>
+    `/admin/courses/${courseId}/assignments/${assignmentId}`,
+  adminGradeSubmission: (
+    courseId: string,
+    assignmentId: string,
+    submissionId: string
+  ) =>
+    `/admin/courses/${courseId}/assignments/${assignmentId}/submissions/${submissionId}`,
+  adminResources: "/admin/resources",
+  adminNewResource: "/admin/resources/new",
+  adminCalendar: "/admin/calendar",
+  adminGradebook: (courseId: string) =>
+    `/admin/courses/${courseId}/gradebook`,
 } as const;

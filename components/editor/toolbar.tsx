@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { Editor } from "@tiptap/react";
 import {
   Bold,
@@ -18,7 +19,7 @@ import {
   Redo,
   Link,
   Image,
-  Youtube,
+  Video,
   AlignLeft,
   AlignCenter,
   AlignRight,
@@ -32,6 +33,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { MediaEmbedDialog } from "./media-embed-dialog";
 
 interface ToolbarProps {
   editor: Editor | null;
@@ -165,7 +167,7 @@ const TOOLBAR_GROUPS: ToolbarAction[][] = [
       action: (e) => e.chain().focus().setHorizontalRule().run(),
     },
   ],
-  // Media
+  // Media (Link and Image only — Video is handled separately via dialog)
   [
     {
       icon: Link,
@@ -192,53 +194,72 @@ const TOOLBAR_GROUPS: ToolbarAction[][] = [
         }
       },
     },
-    {
-      icon: Youtube,
-      label: "YouTube Video",
-      action: (e) => {
-        const url = window.prompt("Enter YouTube URL");
-        if (url) {
-          e.commands.setYoutubeVideo({ src: url });
-        }
-      },
-    },
   ],
 ];
 
 export function Toolbar({ editor }: ToolbarProps) {
+  const [videoDialogOpen, setVideoDialogOpen] = useState(false);
+
   if (!editor) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-0.5 border-b bg-slate-50 px-2 py-1 dark:bg-slate-900">
-      {TOOLBAR_GROUPS.map((group, groupIdx) => (
-        <div key={groupIdx} className="flex items-center">
-          {groupIdx > 0 && (
-            <Separator orientation="vertical" className="mx-1 h-6" />
-          )}
-          {group.map((item) => (
-            <Tooltip key={item.label}>
-              <TooltipTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "h-8 w-8",
-                    item.isActive?.(editor) &&
-                      "bg-slate-200 dark:bg-slate-700"
-                  )}
-                  onClick={() => item.action(editor)}
-                >
-                  <item.icon className="h-4 w-4" />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" className="text-xs">
-                {item.label}
-              </TooltipContent>
-            </Tooltip>
-          ))}
-        </div>
-      ))}
-    </div>
+    <>
+      <div className="flex flex-wrap items-center gap-0.5 border-b bg-slate-50 px-2 py-1 dark:bg-slate-900">
+        {TOOLBAR_GROUPS.map((group, groupIdx) => (
+          <div key={groupIdx} className="flex items-center">
+            {groupIdx > 0 && (
+              <Separator orientation="vertical" className="mx-1 h-6" />
+            )}
+            {group.map((item) => (
+              <Tooltip key={item.label}>
+                <TooltipTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "h-8 w-8",
+                      item.isActive?.(editor) &&
+                        "bg-slate-200 dark:bg-slate-700"
+                    )}
+                    onClick={() => item.action(editor)}
+                  >
+                    <item.icon className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="text-xs">
+                  {item.label}
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+        ))}
+
+        {/* Video embed button (opens dialog) */}
+        <Separator orientation="vertical" className="mx-1 h-6" />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setVideoDialogOpen(true)}
+            >
+              <Video className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="text-xs">
+            Embed Video
+          </TooltipContent>
+        </Tooltip>
+      </div>
+
+      <MediaEmbedDialog
+        editor={editor}
+        open={videoDialogOpen}
+        onOpenChange={setVideoDialogOpen}
+      />
+    </>
   );
 }

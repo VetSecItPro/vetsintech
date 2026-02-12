@@ -28,8 +28,40 @@ export type NotificationType =
   | "certificate_issued"
   | "mention"
   | "cohort_update";
+export type AssignmentStatus = "draft" | "published" | "archived";
+export type SubmissionStatus =
+  | "not_started"
+  | "draft"
+  | "submitted"
+  | "graded"
+  | "returned";
 export type ExternalPlatform = "coursera" | "pluralsight" | "udemy";
 export type SyncStatus = "idle" | "syncing" | "success" | "error";
+export type LearningPathStatus = "draft" | "published" | "archived";
+export type ResourceType =
+  | "pdf"
+  | "slide"
+  | "document"
+  | "spreadsheet"
+  | "video"
+  | "link"
+  | "repo"
+  | "other";
+export type GradeCategory = "quiz" | "assignment" | "participation" | "extra_credit";
+export type BadgeRarity = "common" | "uncommon" | "rare" | "epic" | "legendary";
+export type XpEventType =
+  | "lesson_complete"
+  | "course_complete"
+  | "quiz_pass"
+  | "quiz_perfect"
+  | "assignment_submit"
+  | "first_post"
+  | "helpful_reply"
+  | "streak_milestone"
+  | "badge_earned"
+  | "path_complete"
+  | "login_streak";
+export type CalendarEventType = "custom" | "office_hours" | "meeting" | "deadline";
 
 // ---------------------------------------------------------------------------
 // Row types  (what SELECT returns)
@@ -55,6 +87,36 @@ export interface Profile {
   phone: string | null;
   timezone: string;
   is_active: boolean;
+  username: string | null;
+  headline: string | null;
+  portfolio_public: boolean;
+  linkedin_url: string | null;
+  github_url: string | null;
+  website_url: string | null;
+  skills: string[];
+  military_branch: string | null;
+  military_mos: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type PortfolioItemType =
+  | "project"
+  | "achievement"
+  | "work_sample"
+  | "certification";
+
+export interface PortfolioItemRow {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  item_type: PortfolioItemType;
+  url: string | null;
+  image_url: string | null;
+  skills_used: string[];
+  visible: boolean;
+  position: number;
   created_at: string;
   updated_at: string;
 }
@@ -343,6 +405,222 @@ export interface CourseFile {
   created_at: string;
 }
 
+export interface LearningPathRow {
+  id: string;
+  title: string;
+  slug: string;
+  description: string | null;
+  thumbnail_url: string | null;
+  status: LearningPathStatus;
+  estimated_hours: number | null;
+  difficulty_level: string | null;
+  tags: string[];
+  organization_id: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LearningPathCourseRow {
+  id: string;
+  learning_path_id: string;
+  course_id: string;
+  position: number;
+  is_required: boolean;
+}
+
+export interface LearningPathEnrollmentRow {
+  id: string;
+  learning_path_id: string;
+  student_id: string;
+  enrolled_at: string;
+  completed_at: string | null;
+  organization_id: string;
+}
+
+export interface AssignmentRow {
+  id: string;
+  course_id: string;
+  module_id: string | null;
+  title: string;
+  description: string | null;
+  instructions: string | null;
+  max_score: number;
+  weight: number;
+  due_date: string | null;
+  allow_late_submissions: boolean;
+  late_penalty_percent: number;
+  max_file_size_mb: number;
+  allowed_file_types: string[];
+  max_attempts: number | null;
+  status: AssignmentStatus;
+  rubric: Record<string, unknown>[] | null;
+  organization_id: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AssignmentSubmissionRow {
+  id: string;
+  assignment_id: string;
+  student_id: string;
+  content: string | null;
+  submitted_at: string | null;
+  status: SubmissionStatus;
+  attempt_number: number;
+  score: number | null;
+  feedback: string | null;
+  graded_by: string | null;
+  graded_at: string | null;
+  late: boolean;
+  late_penalty_applied: number;
+  organization_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SubmissionFileRow {
+  id: string;
+  submission_id: string;
+  file_name: string;
+  file_path: string;
+  file_size: number;
+  file_type: string;
+  uploaded_at: string;
+}
+
+export interface GradeConfigRow {
+  id: string;
+  course_id: string;
+  category: GradeCategory;
+  weight: number;
+  drop_lowest: number;
+  organization_id: string;
+  created_at: string;
+}
+
+export interface GradeOverrideRow {
+  id: string;
+  course_id: string;
+  student_id: string;
+  category: GradeCategory;
+  label: string;
+  score: number;
+  max_score: number;
+  notes: string | null;
+  graded_by: string;
+  organization_id: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ResourceRow {
+  id: string;
+  title: string;
+  description: string | null;
+  type: ResourceType;
+  file_path: string | null;
+  file_size: number | null;
+  file_name: string | null;
+  external_url: string | null;
+  course_id: string | null;
+  tags: string[];
+  download_count: number;
+  organization_id: string;
+  uploaded_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface BadgeRow {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  rarity: BadgeRarity;
+  xp_reward: number;
+  criteria: Record<string, unknown>;
+  organization_id: string;
+  created_at: string;
+}
+
+export interface UserBadgeRow {
+  id: string;
+  user_id: string;
+  badge_id: string;
+  earned_at: string;
+}
+
+export interface XpEventRow {
+  id: string;
+  user_id: string;
+  event_type: XpEventType;
+  xp_amount: number;
+  source_id: string | null;
+  source_type: string | null;
+  description: string | null;
+  organization_id: string;
+  created_at: string;
+}
+
+export interface StreakRow {
+  id: string;
+  user_id: string;
+  current_streak: number;
+  longest_streak: number;
+  last_activity_date: string;
+  organization_id: string;
+  updated_at: string;
+}
+
+export type EmailLogStatus = "sent" | "delivered" | "bounced" | "failed";
+
+export interface EmailPreference {
+  id: string;
+  user_id: string;
+  announcement_emails: boolean;
+  grade_emails: boolean;
+  assignment_reminder_emails: boolean;
+  enrollment_emails: boolean;
+  discussion_reply_emails: boolean;
+  weekly_digest: boolean;
+  organization_id: string;
+  updated_at: string;
+}
+
+export interface EmailLog {
+  id: string;
+  to_email: string;
+  to_user_id: string | null;
+  subject: string;
+  template: string;
+  resend_id: string | null;
+  status: EmailLogStatus;
+  error_message: string | null;
+  organization_id: string;
+  created_at: string;
+}
+
+export interface CalendarEventRow {
+  id: string;
+  title: string;
+  description: string | null;
+  event_type: CalendarEventType;
+  start_time: string;
+  end_time: string | null;
+  all_day: boolean;
+  course_id: string | null;
+  cohort_id: string | null;
+  color: string;
+  recurring: boolean;
+  recurrence_rule: string | null;
+  organization_id: string;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // ---------------------------------------------------------------------------
 // Insert types  (required fields for INSERT — omit auto-generated columns)
 // ---------------------------------------------------------------------------
@@ -351,7 +629,7 @@ export type OrganizationInsert = Omit<Organization, "id" | "created_at" | "updat
   Partial<Pick<Organization, "id">>;
 
 export type ProfileInsert = Omit<Profile, "created_at" | "updated_at"> &
-  Partial<Pick<Profile, "avatar_url" | "bio" | "phone" | "timezone" | "is_active">>;
+  Partial<Pick<Profile, "avatar_url" | "bio" | "phone" | "timezone" | "is_active" | "username" | "headline" | "portfolio_public" | "linkedin_url" | "github_url" | "website_url" | "skills" | "military_branch" | "military_mos">>;
 
 export type CourseInsert = Omit<Course, "id" | "created_at" | "updated_at"> &
   Partial<Pick<Course, "id" | "status" | "tags" | "prerequisites">>;
@@ -380,6 +658,57 @@ export type NotificationInsert = Omit<Notification, "id" | "created_at"> &
 export type CertificateInsert = Omit<Certificate, "id" | "created_at"> &
   Partial<Pick<Certificate, "id" | "metadata">>;
 
+export type LearningPathInsert = Omit<LearningPathRow, "id" | "created_at" | "updated_at"> &
+  Partial<Pick<LearningPathRow, "id" | "status" | "tags">>;
+
+export type LearningPathCourseInsert = Omit<LearningPathCourseRow, "id"> &
+  Partial<Pick<LearningPathCourseRow, "id" | "position" | "is_required">>;
+
+export type LearningPathEnrollmentInsert = Omit<LearningPathEnrollmentRow, "id" | "enrolled_at"> &
+  Partial<Pick<LearningPathEnrollmentRow, "id" | "enrolled_at">>;
+
+export type AssignmentInsert = Omit<AssignmentRow, "id" | "created_at" | "updated_at"> &
+  Partial<Pick<AssignmentRow, "id" | "status" | "max_score" | "weight" | "max_file_size_mb" | "allowed_file_types" | "max_attempts">>;
+
+export type AssignmentSubmissionInsert = Omit<AssignmentSubmissionRow, "id" | "created_at" | "updated_at"> &
+  Partial<Pick<AssignmentSubmissionRow, "id" | "status" | "attempt_number" | "late" | "late_penalty_applied">>;
+
+export type SubmissionFileInsert = Omit<SubmissionFileRow, "id" | "uploaded_at"> &
+  Partial<Pick<SubmissionFileRow, "id">>;
+
+export type GradeConfigInsert = Omit<GradeConfigRow, "id" | "created_at"> &
+  Partial<Pick<GradeConfigRow, "id" | "weight" | "drop_lowest">>;
+
+export type GradeOverrideInsert = Omit<GradeOverrideRow, "id" | "created_at" | "updated_at"> &
+  Partial<Pick<GradeOverrideRow, "id" | "max_score">>;
+
+export type ResourceInsert = Omit<ResourceRow, "id" | "created_at" | "updated_at" | "download_count"> &
+  Partial<Pick<ResourceRow, "id" | "tags" | "download_count">>;
+
+export type BadgeInsert = Omit<BadgeRow, "id" | "created_at"> &
+  Partial<Pick<BadgeRow, "id" | "rarity" | "xp_reward">>;
+
+export type UserBadgeInsert = Omit<UserBadgeRow, "id" | "earned_at"> &
+  Partial<Pick<UserBadgeRow, "id">>;
+
+export type XpEventInsert = Omit<XpEventRow, "id" | "created_at"> &
+  Partial<Pick<XpEventRow, "id">>;
+
+export type StreakInsert = Omit<StreakRow, "id" | "updated_at"> &
+  Partial<Pick<StreakRow, "id" | "current_streak" | "longest_streak">>;
+
+export type EmailPreferenceInsert = Omit<EmailPreference, "id" | "updated_at"> &
+  Partial<Pick<EmailPreference, "id" | "announcement_emails" | "grade_emails" | "assignment_reminder_emails" | "enrollment_emails" | "discussion_reply_emails" | "weekly_digest">>;
+
+export type EmailLogInsert = Omit<EmailLog, "id" | "created_at"> &
+  Partial<Pick<EmailLog, "id" | "status">>;
+
+export type CalendarEventInsert = Omit<CalendarEventRow, "id" | "created_at" | "updated_at"> &
+  Partial<Pick<CalendarEventRow, "id" | "event_type" | "all_day" | "color" | "recurring">>;
+
+export type PortfolioItemInsert = Omit<PortfolioItemRow, "id" | "created_at" | "updated_at"> &
+  Partial<Pick<PortfolioItemRow, "id" | "item_type" | "visible" | "position" | "skills_used">>;
+
 // ---------------------------------------------------------------------------
 // Update types  (all fields optional for UPDATE)
 // ---------------------------------------------------------------------------
@@ -394,6 +723,20 @@ export type EnrollmentUpdate = Partial<Pick<Enrollment, "status" | "completed_at
 export type DiscussionUpdate = Partial<Omit<Discussion, "id" | "created_at">>;
 export type AnnouncementUpdate = Partial<Omit<Announcement, "id" | "created_at">>;
 export type NotificationUpdate = Partial<Pick<Notification, "is_read" | "read_at">>;
+export type LearningPathUpdate = Partial<Omit<LearningPathRow, "id" | "created_at" | "organization_id" | "created_by">>;
+export type LearningPathCourseUpdate = Partial<Pick<LearningPathCourseRow, "position" | "is_required">>;
+export type LearningPathEnrollmentUpdate = Partial<Pick<LearningPathEnrollmentRow, "completed_at">>;
+export type AssignmentUpdate = Partial<Omit<AssignmentRow, "id" | "created_at" | "organization_id" | "created_by">>;
+export type AssignmentSubmissionUpdate = Partial<Omit<AssignmentSubmissionRow, "id" | "created_at" | "organization_id" | "assignment_id" | "student_id">>;
+export type ResourceUpdate = Partial<Omit<ResourceRow, "id" | "created_at" | "organization_id" | "uploaded_by">>;
+export type BadgeUpdate = Partial<Omit<BadgeRow, "id" | "created_at" | "organization_id">>;
+export type StreakUpdate = Partial<Omit<StreakRow, "id" | "user_id" | "organization_id">>;
+export type EmailPreferenceUpdate = Partial<Pick<EmailPreference, "announcement_emails" | "grade_emails" | "assignment_reminder_emails" | "enrollment_emails" | "discussion_reply_emails" | "weekly_digest">>;
+export type EmailLogUpdate = Partial<Pick<EmailLog, "status" | "error_message" | "resend_id">>;
+export type CalendarEventUpdate = Partial<Omit<CalendarEventRow, "id" | "created_at" | "organization_id" | "created_by">>;
+export type GradeConfigUpdate = Partial<Pick<GradeConfigRow, "weight" | "drop_lowest">>;
+export type GradeOverrideUpdate = Partial<Omit<GradeOverrideRow, "id" | "created_at" | "organization_id" | "course_id" | "graded_by">>;
+export type PortfolioItemUpdate = Partial<Omit<PortfolioItemRow, "id" | "user_id" | "created_at">>;
 
 // ---------------------------------------------------------------------------
 // Supabase Database interface (for `createClient<Database>()`)
@@ -532,6 +875,91 @@ export interface Database {
         Insert: Omit<CourseFile, "id" | "created_at"> & Partial<Pick<CourseFile, "id">>;
         Update: Partial<Pick<CourseFile, "file_name" | "thumbnail_url">>;
       };
+      learning_paths: {
+        Row: LearningPathRow;
+        Insert: LearningPathInsert;
+        Update: LearningPathUpdate;
+      };
+      learning_path_courses: {
+        Row: LearningPathCourseRow;
+        Insert: LearningPathCourseInsert;
+        Update: LearningPathCourseUpdate;
+      };
+      learning_path_enrollments: {
+        Row: LearningPathEnrollmentRow;
+        Insert: LearningPathEnrollmentInsert;
+        Update: LearningPathEnrollmentUpdate;
+      };
+      assignments: {
+        Row: AssignmentRow;
+        Insert: AssignmentInsert;
+        Update: AssignmentUpdate;
+      };
+      assignment_submissions: {
+        Row: AssignmentSubmissionRow;
+        Insert: AssignmentSubmissionInsert;
+        Update: AssignmentSubmissionUpdate;
+      };
+      submission_files: {
+        Row: SubmissionFileRow;
+        Insert: SubmissionFileInsert;
+        Update: Partial<Pick<SubmissionFileRow, "file_name">>;
+      };
+      grade_configs: {
+        Row: GradeConfigRow;
+        Insert: GradeConfigInsert;
+        Update: GradeConfigUpdate;
+      };
+      grade_overrides: {
+        Row: GradeOverrideRow;
+        Insert: GradeOverrideInsert;
+        Update: GradeOverrideUpdate;
+      };
+      resources: {
+        Row: ResourceRow;
+        Insert: ResourceInsert;
+        Update: ResourceUpdate;
+      };
+      badges: {
+        Row: BadgeRow;
+        Insert: BadgeInsert;
+        Update: BadgeUpdate;
+      };
+      user_badges: {
+        Row: UserBadgeRow;
+        Insert: UserBadgeInsert;
+        Update: never;
+      };
+      xp_events: {
+        Row: XpEventRow;
+        Insert: XpEventInsert;
+        Update: never;
+      };
+      streaks: {
+        Row: StreakRow;
+        Insert: StreakInsert;
+        Update: StreakUpdate;
+      };
+      email_preferences: {
+        Row: EmailPreference;
+        Insert: EmailPreferenceInsert;
+        Update: EmailPreferenceUpdate;
+      };
+      email_log: {
+        Row: EmailLog;
+        Insert: EmailLogInsert;
+        Update: EmailLogUpdate;
+      };
+      calendar_events: {
+        Row: CalendarEventRow;
+        Insert: CalendarEventInsert;
+        Update: CalendarEventUpdate;
+      };
+      portfolio_items: {
+        Row: PortfolioItemRow;
+        Insert: PortfolioItemInsert;
+        Update: PortfolioItemUpdate;
+      };
     };
     Enums: {
       user_role: UserRole;
@@ -543,6 +971,16 @@ export interface Database {
       notification_type: NotificationType;
       external_platform: ExternalPlatform;
       sync_status: SyncStatus;
+      assignment_status: AssignmentStatus;
+      submission_status: SubmissionStatus;
+      grade_category: GradeCategory;
+      learning_path_status: LearningPathStatus;
+      resource_type: ResourceType;
+      badge_rarity: BadgeRarity;
+      xp_event_type: XpEventType;
+      email_log_status: EmailLogStatus;
+      calendar_event_type: CalendarEventType;
+      portfolio_item_type: PortfolioItemType;
     };
   };
 }
