@@ -1,33 +1,19 @@
-import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { ROUTES } from "@/lib/constants/routes";
 import { SettingsClient } from "@/components/admin/settings-client";
 
 export default async function AdminSettingsPage() {
-  const supabase = await createClient();
+  const { profile, organizationId, supabase } = await getAuthenticatedUser();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect(ROUTES.login);
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id, role")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile || profile.role !== "admin") {
+  if (profile.role !== "admin") {
     redirect(ROUTES.dashboard);
   }
 
   const { data: org } = await supabase
     .from("organizations")
     .select("id, name, logo_url")
-    .eq("id", profile.organization_id)
+    .eq("id", organizationId)
     .single();
 
   if (!org) {
@@ -44,7 +30,7 @@ export default async function AdminSettingsPage() {
       user_roles!inner(role)
     `
     )
-    .eq("organization_id", profile.organization_id)
+    .eq("organization_id", organizationId)
     .order("full_name", { ascending: true });
 
   const members = (membersRaw ?? []).map((m) => {

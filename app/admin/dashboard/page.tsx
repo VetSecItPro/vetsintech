@@ -1,7 +1,5 @@
-import { redirect } from "next/navigation";
 import { Users, GraduationCap, TrendingUp, BookOpen } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
-import { ROUTES } from "@/lib/constants/routes";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import {
   getCachedDashboardStats,
   getCachedCourseAnalytics,
@@ -20,29 +18,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 
 export default async function AdminDashboardPage() {
-  const supabase = await createClient();
+  const { organizationId } = await getAuthenticatedUser();
 
-  // Authenticate
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect(ROUTES.login);
-  }
-
-  // Get organization from profile
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.organization_id) {
-    redirect(ROUTES.login);
-  }
-
-  const orgId = profile.organization_id;
+  const orgId = organizationId;
 
   // Fetch all dashboard data in parallel
   const [stats, courseAnalytics, studentProgress] = await Promise.all([

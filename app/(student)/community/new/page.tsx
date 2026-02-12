@@ -1,6 +1,4 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { ROUTES } from "@/lib/constants/routes";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { NewDiscussionForm } from "@/components/community/new-discussion-form";
 
 export const metadata = {
@@ -8,12 +6,7 @@ export const metadata = {
 };
 
 export default async function NewDiscussionPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(ROUTES.login);
+  await getAuthenticatedUser();
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">

@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { ROUTES } from "@/lib/constants/routes";
 import { getDiscussions } from "@/lib/domains/community/queries";
 import { formatDistanceToNow } from "date-fns";
@@ -20,21 +19,9 @@ export default async function CommunityPage({
   searchParams,
 }: CommunityPageProps) {
   const sp = await searchParams;
-  const supabase = await createClient();
+  const { organizationId } = await getAuthenticatedUser();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(ROUTES.login);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id")
-    .eq("id", user.id)
-    .single();
-  if (!profile) redirect(ROUTES.login);
-
-  const discussions = await getDiscussions(profile.organization_id, {
+  const discussions = await getDiscussions(organizationId, {
     search: sp.search,
     cohort_id: sp.cohort_id,
     limit: 25,

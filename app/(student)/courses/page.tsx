@@ -1,7 +1,6 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { ROUTES } from "@/lib/constants/routes";
 import { BookOpen, Clock, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,19 +10,7 @@ export const metadata = {
 };
 
 export default async function CoursesPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(ROUTES.login);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id")
-    .eq("id", user.id)
-    .single();
-  if (!profile) redirect(ROUTES.login);
+  const { user, organizationId, supabase } = await getAuthenticatedUser();
 
   // Get enrolled courses with progress
   const { data: enrollments } = await supabase
@@ -62,7 +49,7 @@ export default async function CoursesPage() {
   const { data: allCourses } = await supabase
     .from("courses")
     .select("id, title, slug, description, thumbnail_url, category, estimated_duration_minutes")
-    .eq("organization_id", profile.organization_id)
+    .eq("organization_id", organizationId)
     .eq("status", "published")
     .order("title");
 

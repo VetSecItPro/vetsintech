@@ -1,6 +1,4 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
-import { ROUTES } from "@/lib/constants/routes";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { CourseCard } from "@/components/courses/course-card";
 import {
   ContinueLearning,
@@ -22,28 +20,16 @@ export const metadata = {
 };
 
 export default async function StudentDashboardPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(ROUTES.login);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id, full_name")
-    .eq("id", user.id)
-    .single();
-  if (!profile) redirect(ROUTES.login);
+  const { user, profile, organizationId } = await getAuthenticatedUser();
 
   // Fetch all data through domain queries in parallel
   const [enrollments, continueLearningData, announcementRows] =
     await Promise.all([
-      getStudentEnrollments(user.id, profile.organization_id, {
+      getStudentEnrollments(user.id, organizationId, {
         statuses: ["active", "completed"],
       }),
-      getContinueLearning(user.id, profile.organization_id),
-      getAnnouncements(profile.organization_id, { limit: 3 }),
+      getContinueLearning(user.id, organizationId),
+      getAnnouncements(organizationId, { limit: 3 }),
     ]);
 
   // Map domain ContinueLearningItem → component ContinueLearningItem

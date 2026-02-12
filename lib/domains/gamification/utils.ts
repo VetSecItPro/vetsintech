@@ -114,51 +114,49 @@ export function formatXpAmount(xp: number): string {
 }
 
 /**
+ * Tailwind color classes for each badge rarity tier.
+ */
+const RARITY_COLORS: Record<
+  BadgeRarity,
+  { text: string; bg: string; border: string; ring: string }
+> = {
+  common: {
+    text: "text-slate-600 dark:text-slate-400",
+    bg: "bg-slate-100 dark:bg-slate-800",
+    border: "border-slate-300 dark:border-slate-600",
+    ring: "ring-slate-300 dark:ring-slate-600",
+  },
+  uncommon: {
+    text: "text-green-600 dark:text-green-400",
+    bg: "bg-green-50 dark:bg-green-900/20",
+    border: "border-green-300 dark:border-green-700",
+    ring: "ring-green-300 dark:ring-green-700",
+  },
+  rare: {
+    text: "text-blue-600 dark:text-blue-400",
+    bg: "bg-blue-50 dark:bg-blue-900/20",
+    border: "border-blue-300 dark:border-blue-700",
+    ring: "ring-blue-300 dark:ring-blue-700",
+  },
+  epic: {
+    text: "text-purple-600 dark:text-purple-400",
+    bg: "bg-purple-50 dark:bg-purple-900/20",
+    border: "border-purple-300 dark:border-purple-700",
+    ring: "ring-purple-300 dark:ring-purple-700",
+  },
+  legendary: {
+    text: "text-amber-600 dark:text-amber-400",
+    bg: "bg-amber-50 dark:bg-amber-900/20",
+    border: "border-amber-300 dark:border-amber-700",
+    ring: "ring-amber-300 dark:ring-amber-700",
+  },
+};
+
+/**
  * Get the Tailwind color classes for a badge rarity.
  */
-export function getRarityColor(rarity: BadgeRarity): {
-  text: string;
-  bg: string;
-  border: string;
-  ring: string;
-} {
-  switch (rarity) {
-    case "common":
-      return {
-        text: "text-slate-600 dark:text-slate-400",
-        bg: "bg-slate-100 dark:bg-slate-800",
-        border: "border-slate-300 dark:border-slate-600",
-        ring: "ring-slate-300 dark:ring-slate-600",
-      };
-    case "uncommon":
-      return {
-        text: "text-green-600 dark:text-green-400",
-        bg: "bg-green-50 dark:bg-green-900/20",
-        border: "border-green-300 dark:border-green-700",
-        ring: "ring-green-300 dark:ring-green-700",
-      };
-    case "rare":
-      return {
-        text: "text-blue-600 dark:text-blue-400",
-        bg: "bg-blue-50 dark:bg-blue-900/20",
-        border: "border-blue-300 dark:border-blue-700",
-        ring: "ring-blue-300 dark:ring-blue-700",
-      };
-    case "epic":
-      return {
-        text: "text-purple-600 dark:text-purple-400",
-        bg: "bg-purple-50 dark:bg-purple-900/20",
-        border: "border-purple-300 dark:border-purple-700",
-        ring: "ring-purple-300 dark:ring-purple-700",
-      };
-    case "legendary":
-      return {
-        text: "text-amber-600 dark:text-amber-400",
-        bg: "bg-amber-50 dark:bg-amber-900/20",
-        border: "border-amber-300 dark:border-amber-700",
-        ring: "ring-amber-300 dark:ring-amber-700",
-      };
-  }
+export function getRarityColor(rarity: BadgeRarity) {
+  return RARITY_COLORS[rarity];
 }
 
 /**

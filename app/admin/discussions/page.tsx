@@ -1,5 +1,5 @@
-import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { getAuthenticatedUser } from "@/lib/supabase/auth-guard";
 import { ROUTES } from "@/lib/constants/routes";
 import {
   Card,
@@ -21,23 +21,9 @@ import { Pin, Lock, MessageSquare } from "lucide-react";
 import { DiscussionModActions } from "@/components/admin/discussion-mod-actions";
 
 export default async function AdminDiscussionsPage() {
-  const supabase = await createClient();
+  const { profile, organizationId, supabase } = await getAuthenticatedUser();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect(ROUTES.login);
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("organization_id, role")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile || (profile.role !== "admin" && profile.role !== "instructor")) {
+  if (profile.role !== "admin" && profile.role !== "instructor") {
     redirect(ROUTES.dashboard);
   }
 
@@ -54,7 +40,7 @@ export default async function AdminDiscussionsPage() {
       posts:posts(count)
     `
     )
-    .eq("organization_id", profile.organization_id)
+    .eq("organization_id", organizationId)
     .order("created_at", { ascending: false });
 
   return (
