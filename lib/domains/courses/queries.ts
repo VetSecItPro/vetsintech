@@ -1,4 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
+import {
+  cached,
+  CacheTags,
+  CacheDurations,
+} from "@/lib/cache";
 import type {
   Course,
   CourseWithStats,
@@ -366,3 +371,41 @@ export async function getCohortWithEnrollments(
       data.enrollments as unknown as CohortWithEnrollments["enrollments"],
   };
 }
+
+// ============================================================================
+// Cached Variants
+// ============================================================================
+
+/**
+ * Cached course list. Revalidates every 120s or on course mutations.
+ * Note: Only use for unfiltered/default listing. Filtered queries bypass cache.
+ */
+export const getCachedCourses = (orgId: string) =>
+  cached(
+    () => getCourses(orgId),
+    ["courses", orgId],
+    [CacheTags.courses(orgId)],
+    CacheDurations.COURSES
+  )();
+
+/**
+ * Cached course categories. Revalidates every 300s or on course mutations.
+ */
+export const getCachedCourseCategories = (orgId: string) =>
+  cached(
+    () => getCourseCategories(orgId),
+    ["course-categories", orgId],
+    [CacheTags.courseCategories(orgId)],
+    CacheDurations.COURSE_CATEGORIES
+  )();
+
+/**
+ * Cached cohort list. Revalidates every 120s or on cohort mutations.
+ */
+export const getCachedCohorts = (orgId: string) =>
+  cached(
+    () => getCohorts(orgId),
+    ["cohorts", orgId],
+    [CacheTags.cohorts(orgId)],
+    CacheDurations.COHORTS
+  )();

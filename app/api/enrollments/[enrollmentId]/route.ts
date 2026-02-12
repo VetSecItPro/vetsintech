@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth, isAuthError } from "@/lib/supabase/api-middleware";
 import { createClient } from "@/lib/supabase/server";
+import { invalidateEnrollmentCache } from "@/lib/cache";
 
 export async function DELETE(
   request: Request,
@@ -52,6 +53,7 @@ export async function DELETE(
       );
     }
 
+    invalidateEnrollmentCache(auth.organizationId);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("DELETE /api/enrollments/[id] error:", error);

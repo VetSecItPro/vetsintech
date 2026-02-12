@@ -3,8 +3,8 @@ import { Users, GraduationCap, TrendingUp, BookOpen } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ROUTES } from "@/lib/constants/routes";
 import {
-  getDashboardStats,
-  getCourseAnalytics,
+  getCachedDashboardStats,
+  getCachedCourseAnalytics,
   getStudentProgressTable,
 } from "@/lib/domains/admin/queries";
 import { formatPercentage, formatCompactNumber } from "@/lib/domains/admin/utils";
@@ -46,8 +46,8 @@ export default async function AdminDashboardPage() {
 
   // Fetch all dashboard data in parallel
   const [stats, courseAnalytics, studentProgress] = await Promise.all([
-    getDashboardStats(orgId),
-    getCourseAnalytics(orgId),
+    getCachedDashboardStats(orgId),
+    getCachedCourseAnalytics(orgId),
     getStudentProgressTable(orgId, { limit: 10 }),
   ]);
 

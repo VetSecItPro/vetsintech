@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod/v4";
 import { requireAuth, isAuthError } from "@/lib/supabase/api-middleware";
 import { createClient } from "@/lib/supabase/server";
+import { invalidateEnrollmentCache } from "@/lib/cache";
 
 const createEnrollmentSchema = z.object({
   user_id: z.uuid("Invalid user ID"),
@@ -92,6 +93,7 @@ export async function POST(request: Request) {
       );
     }
 
+    invalidateEnrollmentCache(auth.organizationId);
     return NextResponse.json({ data: enrollment }, { status: 201 });
   } catch (error) {
     console.error("POST /api/enrollments error:", error);

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { invalidateCourseCache, invalidateCohortCache } from "@/lib/cache";
 import type {
   Course,
   Module,
@@ -64,6 +65,7 @@ export async function createCourse(
     .single();
 
   if (error) throw error;
+  invalidateCourseCache(organizationId);
   return data;
 }
 
@@ -100,6 +102,7 @@ export async function updateCourse(
     .single();
 
   if (error) throw error;
+  invalidateCourseCache(organizationId);
   return data;
 }
 
@@ -116,6 +119,7 @@ export async function deleteCourse(
     .eq("organization_id", organizationId);
 
   if (error) throw error;
+  invalidateCourseCache(organizationId);
 }
 
 export async function publishCourse(
@@ -330,6 +334,7 @@ export async function createCohort(
     .single();
 
   if (error) throw error;
+  invalidateCohortCache(organizationId);
   return data;
 }
 
@@ -349,6 +354,7 @@ export async function updateCohort(
     .single();
 
   if (error) throw error;
+  invalidateCohortCache(organizationId);
   return data;
 }
 
@@ -365,4 +371,5 @@ export async function deleteCohort(
     .eq("organization_id", organizationId);
 
   if (error) throw error;
+  invalidateCohortCache(organizationId);
 }

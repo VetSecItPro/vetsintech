@@ -211,8 +211,7 @@ export async function syncPlatformData(
  */
 export async function syncPlatform(
   orgId: string,
-  platform: ExternalPlatform,
-  credentials: Record<string, string>
+  platform: ExternalPlatform
 ): Promise<SyncResult> {
   const config = await getPlatformConfig(orgId, platform);
   if (!config) {
@@ -225,8 +224,6 @@ export async function syncPlatform(
     };
   }
 
-  // Use credentials from config rather than the passed-in ones for consistency
-  void credentials;
   return syncPlatformData(config.id, orgId);
 }
 
